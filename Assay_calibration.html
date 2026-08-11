@@ -1,0 +1,683 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Assay Calibration &amp; Estimator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F5F7F6;
+    --panel:#FFFFFF;
+    --ink:#16262B;
+    --ink-soft:#51666D;
+    --ink-faint:#8AA0A6;
+    --accent:#1F7A72;
+    --accent-dark:#155A54;
+    --accent-2:#C7742F;
+    --line:#DCE5E4;
+    --grid:#EAF0EF;
+    --danger:#B0453B;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    padding:32px 24px 64px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px;margin:0 auto;}
+
+  /* Header */
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--accent-dark);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--accent-2);display:inline-block;}
+  h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:clamp(26px,3.4vw,38px);
+    margin:0 0 8px;
+    letter-spacing:-0.01em;
+  }
+  .sub{
+    color:var(--ink-soft);
+    font-size:15px;
+    max-width:640px;
+    line-height:1.55;
+    margin-bottom:8px;
+  }
+  header{margin-bottom:34px;border-bottom:1px solid var(--line);padding-bottom:26px;}
+
+  /* Section shell */
+  .step{
+    display:flex;
+    gap:10px;
+    align-items:baseline;
+    margin-bottom:6px;
+  }
+  .step-num{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--accent);
+    border:1px solid var(--accent);
+    border-radius:20px;
+    padding:2px 9px;
+    flex-shrink:0;
+  }
+  .step h2{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:19px;
+    margin:0;
+    font-weight:600;
+  }
+  .step-desc{
+    color:var(--ink-soft);
+    font-size:13.5px;
+    margin:0 0 16px 0;
+    line-height:1.5;
+    max-width:620px;
+  }
+  section.panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:24px 26px 26px;
+    margin-bottom:22px;
+  }
+
+  .grid-two{
+    display:grid;
+    grid-template-columns:1.1fr 0.9fr;
+    gap:26px;
+  }
+  @media (max-width:880px){ .grid-two{grid-template-columns:1fr;} }
+
+  /* Table */
+  table.datatable{
+    width:100%;
+    border-collapse:collapse;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13.5px;
+  }
+  table.datatable th{
+    text-align:left;
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:11.5px;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    padding:0 8px 8px;
+    border-bottom:1px solid var(--line);
+  }
+  table.datatable td{
+    padding:5px 8px;
+    border-bottom:1px solid var(--grid);
+  }
+  table.datatable input{
+    width:100%;
+    border:1px solid var(--line);
+    background:#FBFDFC;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13.5px;
+    color:var(--ink);
+    padding:6px 7px;
+    border-radius:6px;
+    outline:none;
+  }
+  table.datatable input::placeholder{color:var(--ink-faint);opacity:.7;}
+  table.datatable input:hover{border-color:var(--ink-faint);}
+  table.datatable input:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba(31,122,114,0.12);}
+  .rm-btn{
+    background:none;border:none;color:var(--ink-faint);cursor:pointer;
+    font-size:15px;line-height:1;padding:4px 6px;border-radius:6px;
+  }
+  .rm-btn:hover{color:var(--danger);background:#FBEDEB;}
+
+  .row-actions{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap;}
+
+  button.btn{
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:13.5px;
+    border-radius:8px;
+    padding:9px 16px;
+    border:1px solid var(--line);
+    background:#fff;
+    color:var(--ink);
+    cursor:pointer;
+    transition:.15s ease;
+  }
+  button.btn:hover{border-color:var(--ink-faint);}
+  button.btn.primary{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:#fff;
+  }
+  button.btn.primary:hover{background:var(--accent-dark);}
+  button.btn.ghost{
+    border-color:transparent;
+    color:var(--accent-dark);
+  }
+  button.btn.ghost:hover{background:var(--grid);}
+  button.btn:disabled{opacity:.45;cursor:not-allowed;}
+
+  .help{
+    font-size:12.5px;
+    color:var(--ink-faint);
+    margin-top:10px;
+    line-height:1.5;
+  }
+
+  /* Readout panel */
+  .readout{
+    background:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+      #FCFDFD;
+    background-size:24px 24px;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:16px 16px 8px;
+  }
+  .readout-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:4px;
+  }
+  .readout-title{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+  }
+  canvas#chart{width:100%;height:220px;display:block;}
+
+  .eqn-box{
+    margin-top:10px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px 22px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+  }
+  .eqn-box .item .label{color:var(--ink-faint);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:2px;}
+  .eqn-box .item .val{color:var(--accent-dark);font-weight:600;font-size:15px;}
+  .eqn-box .item .val.warn{color:var(--accent-2);}
+
+  .flag{
+    margin-top:12px;
+    background:#FBF3E9;
+    border:1px solid #EBD3AE;
+    color:#7A4F16;
+    font-size:12.5px;
+    line-height:1.5;
+    padding:9px 12px;
+    border-radius:8px;
+    display:none;
+  }
+  .flag.show{display:block;}
+
+  /* Results table */
+  .results-table-wrap{overflow-x:auto;}
+  table.results{
+    width:100%;
+    border-collapse:collapse;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13.5px;
+  }
+  table.results th{
+    text-align:left;
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:11.5px;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    padding:0 10px 8px;
+    border-bottom:1px solid var(--line);
+  }
+  table.results td{
+    padding:8px 10px;
+    border-bottom:1px solid var(--grid);
+  }
+  .pill{
+    display:inline-block;
+    font-family:'Inter',sans-serif;
+    font-size:11px;
+    font-weight:600;
+    padding:2px 9px;
+    border-radius:20px;
+  }
+  .pill.below{background:#E9F4F1;color:var(--accent-dark);}
+  .pill.above{background:#FBEDEB;color:var(--danger);}
+
+  .empty-state{
+    color:var(--ink-faint);
+    font-size:13px;
+    font-style:italic;
+    padding:14px 4px;
+  }
+
+  footer{
+    text-align:center;
+    color:var(--ink-faint);
+    font-size:12px;
+    margin-top:44px;
+    font-family:'IBM Plex Mono',monospace;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow"><span class="dot"></span>ARCHACHATINA ASSAY TOOLS</div>
+    <h1>Endotoxin Kit Calibration &amp; Estimator</h1>
+    <p class="sub">Type in your standards and sample readings below — no coding needed. The tool builds the calibration curve and estimates endotoxin content for every sample automatically, and you can download the results when you're done.</p>
+  </header>
+
+  <!-- STEP 1 -->
+  <section class="panel">
+    <div class="step"><span class="step-num">1</span><h2>Calibration standards</h2></div>
+    <p class="step-desc">Enter your known endotoxin concentrations (EU) and their measured absorbance values. This is the same data you'd normally use to draw a standard curve by hand.</p>
+
+    <div class="grid-two">
+      <div>
+        <table class="datatable" id="calTable">
+          <thead>
+            <tr><th style="width:38%">Endotoxin (EU)</th><th style="width:38%">Absorbance</th><th style="width:24%"></th></tr>
+          </thead>
+          <tbody id="calBody"></tbody>
+        </table>
+        <div class="row-actions">
+          <button class="btn" id="addCalRow">+ Add row</button>
+          <button class="btn ghost" id="clearCal">Clear all</button>
+          <button class="btn primary" id="computeCal">Compute calibration curve</button>
+        </div>
+        <div class="help">Tip: include a 0 EU standard if you have one — it anchors the line correctly.</div>
+      </div>
+
+      <div class="readout">
+        <div class="readout-head">
+          <span class="readout-title">Live readout</span>
+          <span class="readout-title" id="chartStatus">waiting for data</span>
+        </div>
+        <canvas id="chart" width="600" height="220"></canvas>
+        <div class="eqn-box" id="eqnBox">
+          <div class="item"><span class="label">Equation</span><span class="val" id="eqnVal">—</span></div>
+          <div class="item"><span class="label">R²</span><span class="val" id="r2Val">—</span></div>
+        </div>
+        <div class="flag" id="r2Flag">Low R² — the fit is real, but standards are scattered. Worth noting when you report this.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="panel">
+    <div class="step"><span class="step-num">2</span><h2>Samples to estimate</h2></div>
+    <p class="step-desc">Add every sample you want tested — name it however makes sense to you (batch number, fluid type, etc.) and enter its measured absorbance.</p>
+
+    <table class="datatable" id="sampleTable">
+      <thead>
+        <tr><th style="width:46%">Sample name</th><th style="width:30%">Absorbance</th><th style="width:24%"></th></tr>
+      </thead>
+      <tbody id="sampleBody"></tbody>
+    </table>
+    <div class="row-actions">
+      <button class="btn" id="addSampleRow">+ Add row</button>
+      <button class="btn ghost" id="clearSamples">Clear all</button>
+      <button class="btn ghost" id="pasteBtn">Paste multiple rows</button>
+      <button class="btn primary" id="estimateBtn" disabled>Estimate concentrations</button>
+    </div>
+    <div class="help" id="pasteHelp" style="display:none;">
+      Paste rows below as <b>name, absorbance</b> — one per line — then click "Import", e.g.<br>
+      <span style="font-family:'IBM Plex Mono',monospace;">Dextrose 5% 78, 0.015</span>
+      <textarea id="pasteArea" rows="4" style="width:100%;margin-top:8px;font-family:'IBM Plex Mono',monospace;font-size:13px;padding:8px;border-radius:8px;border:1px solid var(--line);"></textarea>
+      <div style="margin-top:8px;"><button class="btn primary" id="importPaste">Import rows</button></div>
+    </div>
+    <div class="help" id="estimateHint">Compute the calibration curve in Step 1 first — this button will unlock once it's ready.</div>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="panel">
+    <div class="step"><span class="step-num">3</span><h2>Results</h2></div>
+    <p class="step-desc">Estimated endotoxin content for each sample, based on your calibration curve. Values are flagged if they suggest a sample may be near or above a threshold you set.</p>
+
+    <div class="row-actions" style="margin-top:0;margin-bottom:14px;">
+      <label style="font-size:13px;color:var(--ink-soft);display:flex;align-items:center;gap:8px;">
+        Flag samples above
+        <input type="number" id="thresholdInput" value="0.5" step="0.1" style="width:70px;font-family:'IBM Plex Mono',monospace;padding:5px 7px;border-radius:6px;border:1px solid var(--line);">
+        EU/mL
+      </label>
+      <button class="btn" id="downloadCsv">Download results (CSV)</button>
+    </div>
+
+    <div class="results-table-wrap">
+      <table class="results" id="resultsTable">
+        <thead>
+          <tr><th>Sample</th><th>Absorbance</th><th>Estimated EU/mL</th><th>Status</th></tr>
+        </thead>
+        <tbody id="resultsBody">
+          <tr><td colspan="4"><div class="empty-state">No results yet — complete steps 1 and 2 above.</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>BUILT FOR THE A. MARGINATA ENDOTOXIN KIT VALIDATION PROJECT</footer>
+</div>
+
+<script>
+(function(){
+  const calBody = document.getElementById('calBody');
+  const sampleBody = document.getElementById('sampleBody');
+  const resultsBody = document.getElementById('resultsBody');
+  const chartStatus = document.getElementById('chartStatus');
+  const eqnVal = document.getElementById('eqnVal');
+  const r2Val = document.getElementById('r2Val');
+  const r2Flag = document.getElementById('r2Flag');
+  const estimateBtn = document.getElementById('estimateBtn');
+  const estimateHint = document.getElementById('estimateHint');
+  const canvas = document.getElementById('chart');
+  const ctx = canvas.getContext('2d');
+
+  let calibration = null; // {slope, intercept, r2, points:[[x,y]]}
+  let lastResults = [];
+
+  function makeRow(container, cols, placeholder1, placeholder2){
+    const tr = document.createElement('tr');
+    const td1 = document.createElement('td');
+    const in1 = document.createElement('input');
+    in1.type = cols === 'num' ? 'number' : 'text';
+    in1.step = 'any';
+    in1.placeholder = placeholder1;
+    td1.appendChild(in1);
+
+    const td2 = document.createElement('td');
+    const in2 = document.createElement('input');
+    in2.type = 'number';
+    in2.step = 'any';
+    in2.placeholder = placeholder2;
+    td2.appendChild(in2);
+
+    const td3 = document.createElement('td');
+    const rm = document.createElement('button');
+    rm.className = 'rm-btn';
+    rm.innerHTML = '✕';
+    rm.onclick = () => { tr.remove(); };
+    td3.appendChild(rm);
+
+    tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3);
+    container.appendChild(tr);
+    return tr;
+  }
+
+  function addCalRow(eu='', abs=''){
+    const tr = makeRow(calBody, 'num', 'e.g. 5', 'e.g. 0.108');
+    tr.children[0].querySelector('input').value = eu;
+    tr.children[1].querySelector('input').value = abs;
+  }
+  function addSampleRow(name='', abs=''){
+    const tr = makeRow(sampleBody, 'text', 'e.g. Dextrose 5% 78', 'e.g. 0.015');
+    tr.children[0].querySelector('input').value = name;
+    tr.children[1].querySelector('input').value = abs;
+  }
+
+  // seed with a few empty rows
+  for(let i=0;i<4;i++) addCalRow();
+  for(let i=0;i<3;i++) addSampleRow();
+
+  document.getElementById('addCalRow').onclick = () => addCalRow();
+  document.getElementById('addSampleRow').onclick = () => addSampleRow();
+  document.getElementById('clearCal').onclick = () => { calBody.innerHTML=''; for(let i=0;i<4;i++) addCalRow(); calibration=null; drawChart(); updateEqnDisplay(); estimateBtn.disabled=true; estimateHint.style.display='block'; };
+  document.getElementById('clearSamples').onclick = () => { sampleBody.innerHTML=''; for(let i=0;i<3;i++) addSampleRow(); };
+
+  document.getElementById('pasteBtn').onclick = () => {
+    const el = document.getElementById('pasteHelp');
+    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+  };
+  document.getElementById('importPaste').onclick = () => {
+    const raw = document.getElementById('pasteArea').value.trim();
+    if(!raw) return;
+    raw.split('\n').forEach(line => {
+      const parts = line.split(',');
+      if(parts.length >= 2){
+        addSampleRow(parts[0].trim(), parts[1].trim());
+      }
+    });
+    document.getElementById('pasteArea').value = '';
+  };
+
+  function linreg(points){
+    const n = points.length;
+    const sx = points.reduce((a,p)=>a+p[0],0);
+    const sy = points.reduce((a,p)=>a+p[1],0);
+    const sxy = points.reduce((a,p)=>a+p[0]*p[1],0);
+    const sxx = points.reduce((a,p)=>a+p[0]*p[0],0);
+    const slope = (n*sxy - sx*sy) / (n*sxx - sx*sx);
+    const intercept = (sy - slope*sx) / n;
+    const meanY = sy/n;
+    const ssTot = points.reduce((a,p)=>a+Math.pow(p[1]-meanY,2),0);
+    const ssRes = points.reduce((a,p)=>a+Math.pow(p[1]-(slope*p[0]+intercept),2),0);
+    const r2 = ssTot === 0 ? 1 : 1 - (ssRes/ssTot);
+    return {slope, intercept, r2};
+  }
+
+  function readCalPoints(){
+    const rows = Array.from(calBody.children);
+    const pts = [];
+    rows.forEach(tr=>{
+      const x = parseFloat(tr.children[0].querySelector('input').value);
+      const y = parseFloat(tr.children[1].querySelector('input').value);
+      if(!isNaN(x) && !isNaN(y)) pts.push([x,y]);
+    });
+    return pts;
+  }
+
+  function readSamples(){
+    const rows = Array.from(sampleBody.children);
+    const samples = [];
+    rows.forEach(tr=>{
+      const name = tr.children[0].querySelector('input').value.trim();
+      const abs = parseFloat(tr.children[1].querySelector('input').value);
+      if(name && !isNaN(abs)) samples.push({name, abs});
+    });
+    return samples;
+  }
+
+  function updateEqnDisplay(){
+    if(!calibration){
+      eqnVal.textContent = '—';
+      r2Val.textContent = '—';
+      r2Val.classList.remove('warn');
+      r2Flag.classList.remove('show');
+      return;
+    }
+    const {slope, intercept, r2} = calibration;
+    eqnVal.textContent = `y = ${slope.toFixed(4)}x + ${intercept.toFixed(4)}`;
+    r2Val.textContent = r2.toFixed(3);
+    if(r2 < 0.7){
+      r2Val.classList.add('warn');
+      r2Flag.classList.add('show');
+    } else {
+      r2Val.classList.remove('warn');
+      r2Flag.classList.remove('show');
+    }
+  }
+
+  function drawChart(){
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0,0,w,h);
+    const pts = readCalPoints();
+    const pad = {l:38, r:16, t:14, b:26};
+    const plotW = w - pad.l - pad.r;
+    const plotH = h - pad.t - pad.b;
+
+    if(pts.length === 0){
+      chartStatus.textContent = 'waiting for data';
+      return;
+    }
+    chartStatus.textContent = pts.length + ' point' + (pts.length>1?'s':'');
+
+    const xs = pts.map(p=>p[0]);
+    const ys = pts.map(p=>p[1]);
+    let xMin = Math.min(0, ...xs), xMax = Math.max(...xs);
+    let yMin = Math.min(0, ...ys), yMax = Math.max(...ys);
+    if(xMax === xMin) xMax = xMin + 1;
+    if(yMax === yMin) yMax = yMin + 1;
+    const xPad = (xMax-xMin)*0.08, yPad = (yMax-yMin)*0.15;
+    xMin -= xPad; xMax += xPad; yMin -= yPad; yMax += yPad;
+
+    const X = x => pad.l + (x - xMin)/(xMax-xMin) * plotW;
+    const Y = y => pad.t + plotH - (y - yMin)/(yMax-yMin) * plotH;
+
+    // axes
+    ctx.strokeStyle = '#C9D6D5';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, pad.t+plotH); ctx.lineTo(pad.l+plotW, pad.t+plotH);
+    ctx.stroke();
+
+    ctx.fillStyle = '#8AA0A6';
+    ctx.font = '10px IBM Plex Mono, monospace';
+    ctx.fillText(xMin.toFixed(1), pad.l-4, pad.t+plotH+16);
+    ctx.fillText(xMax.toFixed(1), pad.l+plotW-16, pad.t+plotH+16);
+    ctx.save();
+    ctx.translate(10, pad.t+plotH/2);
+    ctx.rotate(-Math.PI/2);
+    ctx.fillText('Abs', 0, 0);
+    ctx.restore();
+
+    // fit line if available
+    if(calibration){
+      const {slope, intercept} = calibration;
+      ctx.strokeStyle = '#1F7A72';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(X(xMin), Y(slope*xMin+intercept));
+      ctx.lineTo(X(xMax), Y(slope*xMax+intercept));
+      ctx.stroke();
+    }
+
+    // standard points
+    ctx.fillStyle = '#16262B';
+    pts.forEach(p=>{
+      ctx.beginPath();
+      ctx.arc(X(p[0]), Y(p[1]), 4, 0, Math.PI*2);
+      ctx.fill();
+    });
+
+    // sample points (as amber diamonds), if we have results
+    if(calibration && lastResults.length){
+      ctx.fillStyle = '#C7742F';
+      lastResults.forEach(r=>{
+        const px = X(r.eu), py = Y(r.abs);
+        ctx.beginPath();
+        ctx.moveTo(px, py-5); ctx.lineTo(px+5, py); ctx.lineTo(px, py+5); ctx.lineTo(px-5, py);
+        ctx.closePath();
+        ctx.fill();
+      });
+    }
+  }
+
+  document.getElementById('computeCal').onclick = () => {
+    const pts = readCalPoints();
+    if(pts.length < 2){
+      alert('Add at least two calibration points (with both EU and absorbance filled in) before computing.');
+      return;
+    }
+    calibration = { ...linreg(pts), points: pts };
+    updateEqnDisplay();
+    drawChart();
+    estimateBtn.disabled = false;
+    estimateHint.style.display = 'none';
+  };
+
+  function renderResults(results, threshold){
+    if(results.length === 0){
+      resultsBody.innerHTML = '<tr><td colspan="4"><div class="empty-state">No results yet — complete steps 1 and 2 above.</div></td></tr>';
+      return;
+    }
+    resultsBody.innerHTML = '';
+    results.forEach(r=>{
+      const tr = document.createElement('tr');
+      const above = r.eu >= threshold;
+      tr.innerHTML = `
+        <td>${r.name}</td>
+        <td>${r.abs}</td>
+        <td>${r.eu.toFixed(2)}</td>
+        <td><span class="pill ${above?'above':'below'}">${above ? 'Above threshold' : 'Below threshold'}</span></td>
+      `;
+      resultsBody.appendChild(tr);
+    });
+  }
+
+  document.getElementById('estimateBtn').onclick = () => {
+    if(!calibration) return;
+    const samples = readSamples();
+    if(samples.length === 0){
+      alert('Add at least one sample with a name and absorbance value.');
+      return;
+    }
+    const {slope, intercept} = calibration;
+    lastResults = samples.map(s => ({
+      name: s.name,
+      abs: s.abs,
+      eu: (s.abs - intercept) / slope
+    }));
+    const threshold = parseFloat(document.getElementById('thresholdInput').value) || 0;
+    renderResults(lastResults, threshold);
+    drawChart();
+  };
+
+  document.getElementById('thresholdInput').addEventListener('input', () => {
+    if(lastResults.length){
+      const threshold = parseFloat(document.getElementById('thresholdInput').value) || 0;
+      renderResults(lastResults, threshold);
+    }
+  });
+
+  document.getElementById('downloadCsv').onclick = () => {
+    if(lastResults.length === 0){
+      alert('Run "Estimate concentrations" first — there are no results to download yet.');
+      return;
+    }
+    const threshold = parseFloat(document.getElementById('thresholdInput').value) || 0;
+    let csv = 'Sample,Absorbance,Estimated EU/mL,Status\n';
+    lastResults.forEach(r=>{
+      const status = r.eu >= threshold ? 'Above threshold' : 'Below threshold';
+      csv += `"${r.name}",${r.abs},${r.eu.toFixed(4)},${status}\n`;
+    });
+    csv += `\nCalibration equation,y = ${calibration.slope.toFixed(4)}x + ${calibration.intercept.toFixed(4)}\n`;
+    csv += `R-squared,${calibration.r2.toFixed(4)}\n`;
+
+    const blob = new Blob([csv], {type:'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'endotoxin_assay_results.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  drawChart();
+})();
+</script>
+</body>
+</html>
