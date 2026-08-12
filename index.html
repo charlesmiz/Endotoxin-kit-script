@@ -1,735 +1,916 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Endotoxin Kit — Calibration &amp; Estimator</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/@phosphor-icons/web"></script>
-<script src="https://cdn.plot.ly/plotly-3.1.1.min.js"></script>
-<script>
-tailwind.config = {
-  theme: {
-    extend: {
-      fontFamily: {
-        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
-      },
-      colors: {
-        brand: { DEFAULT: '#0f766e', hover: '#0d635d', light: '#ccfbf1' },
-        ink:   { 900: '#0f172a', 700: '#334155', 500: '#64748b', 400: '#94a3b8' },
-        paper: '#ffffff', canvas: '#f8fafc', line: '#e2e8f0',
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Endotoxin Kit — Calibration &amp; Estimator</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <script src="https://cdn.plot.ly/plotly-3.1.1.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
+          },
+          colors: {
+            brand: { DEFAULT: '#0f766e', hover: '#0d635d', light: '#ccfbf1' },
+            ink: { 900: '#0f172a', 700: '#334155', 500: '#64748b', 400: '#94a3b8' },
+            paper: '#ffffff', canvas: '#f8fafc', line: '#e2e8f0',
+          }
+        }
       }
     }
-  }
-}
-</script>
-<style>
-  body{-webkit-font-smoothing:antialiased;}
-  ::-webkit-scrollbar{width:8px;height:8px;}
-  ::-webkit-scrollbar-track{background:transparent;}
-  ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:8px;}
-  .hairline{border-color:#e2e8f0;}
-  .tab-active{color:#0f172a;border-bottom:2px solid #0f766e;font-weight:600;}
-  .tab-inactive{color:#64748b;border-bottom:2px solid transparent;}
-  .num{font-feature-settings:"tnum";}
-  .view{display:none;}
-  .view.active{display:block;}
-  table.dt input{width:100%;border:1px solid #e2e8f0;background:#fbfdfc;font-family:'IBM Plex Mono',monospace;font-size:13px;color:#0f172a;padding:6px 8px;border-radius:6px;outline:none;}
-  table.dt input:focus{border-color:#0f766e;background:#fff;box-shadow:0 0 0 3px rgba(15,118,110,.12);}
-  table.dt input::placeholder{color:#94a3b8;}
-  .rm-btn{color:#94a3b8;cursor:pointer;transition:.15s;}
-  .rm-btn:hover{color:#e11d48;}
-  @media print{
-    .no-print{display:none !important;}
-    body{background:white !important;}
-    .page-sheet{box-shadow:none !important;margin:0 !important;width:100% !important;border:none !important;}
-    .view{display:block !important;}
-  }
-  .page-sheet{width:210mm;min-height:150mm;padding:16mm 18mm;margin:24px auto;background:white;box-shadow:0 10px 25px -5px rgba(0,0,0,.1),0 8px 10px -6px rgba(0,0,0,.1);}
-  .report-header-line{border-bottom:2px solid #0f766e;}
-</style>
+  </script>
+  <style>
+    body {
+      -webkit-font-smoothing: antialiased;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 8px;
+    }
+
+    .hairline {
+      border-color: #e2e8f0;
+    }
+
+    .tab-active {
+      color: #0f172a;
+      border-bottom: 2px solid #0f766e;
+      font-weight: 600;
+    }
+
+    .tab-inactive {
+      color: #64748b;
+      border-bottom: 2px solid transparent;
+    }
+
+    .num {
+      font-feature-settings: "tnum";
+    }
+
+    .view {
+      display: none;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    table.dt input {
+      width: 100%;
+      border: 1px solid #e2e8f0;
+      background: #fbfdfc;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      color: #0f172a;
+      padding: 6px 8px;
+      border-radius: 6px;
+      outline: none;
+    }
+
+    table.dt input:focus {
+      border-color: #0f766e;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, .12);
+    }
+
+    table.dt input::placeholder {
+      color: #94a3b8;
+    }
+
+    .rm-btn {
+      color: #94a3b8;
+      cursor: pointer;
+      transition: .15s;
+    }
+
+    .rm-btn:hover {
+      color: #e11d48;
+    }
+
+    @media print {
+      @page {
+        size: A4;
+        margin: 8mm;
+      }
+
+      .page-sheet {
+        width: auto !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 6mm 8mm !important;
+        box-shadow: none !important;
+        border: none !important;
+      }
+
+      /* Compress vertical spacing only in the printed report */
+      .page-sheet .mb-8 {
+        margin-bottom: 4mm !important;
+      }
+
+      .page-sheet .mb-10 {
+        margin-bottom: 4mm !important;
+      }
+
+      .page-sheet .mt-14 {
+        margin-top: 4mm !important;
+      }
+
+      .page-sheet .pt-6 {
+        padding-top: 3mm !important;
+      }
+
+      .page-sheet .mb-3 {
+        margin-bottom: 2mm !important;
+      }
+
+      /* Make the calibration graph slightly shorter */
+      #repPlot {
+        height: 210px !important;
+      }
+    }
+
+    .page-sheet {
+      width: 210mm;
+      min-height: 150mm;
+      padding: 16mm 18mm;
+      margin: 24px auto;
+      background: white;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, .1), 0 8px 10px -6px rgba(0, 0, 0, .1);
+    }
+
+    .report-header-line {
+      border-bottom: 2px solid #0f766e;
+    }
+  </style>
 </head>
+
 <body class="bg-canvas text-ink-900 font-sans min-h-screen flex flex-col">
 
-<!-- Top bar -->
-<header class="bg-ink-900 text-white h-14 flex items-center px-6 shrink-0 justify-between no-print">
-  <div class="flex items-center gap-3 min-w-0">
-    <span class="text-brand-light"><i class="ph-fill ph-flask text-xl"></i></span>
-    <span class="font-semibold tracking-tight text-[15px] whitespace-nowrap">Endotoxin Kit Workspace</span>
-    <span class="text-ink-400 text-xs ml-2 hidden sm:inline">Archachatina marginata assay</span>
-  </div>
-  <div class="flex items-center gap-3">
-    <input id="runLabel" value="Run 1" class="bg-slate-800 text-white text-xs px-2.5 py-1.5 rounded-md border border-slate-700 w-24 outline-none focus:border-brand" />
-    <button onclick="goToReport()" class="px-3 py-1.5 rounded-md bg-brand hover:bg-brand-hover text-white text-xs font-medium transition flex items-center gap-1.5">
-      <i class="ph ph-file-text"></i> Build Report
-    </button>
-  </div>
-</header>
+  <!-- Top bar -->
+  <header class="bg-ink-900 text-white h-14 flex items-center px-6 shrink-0 justify-between no-print">
+    <div class="flex items-center gap-3 min-w-0">
+      <span class="text-brand-light"><i class="ph-fill ph-flask text-xl"></i></span>
+      <span class="font-semibold tracking-tight text-[15px] whitespace-nowrap">Endotoxin Kit Workspace</span>
+      <span class="text-ink-400 text-xs ml-2 hidden sm:inline">Archachatina marginata assay</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <input id="runLabel" value="Run 1"
+        class="bg-slate-800 text-white text-xs px-2.5 py-1.5 rounded-md border border-slate-700 w-24 outline-none focus:border-brand" />
+      <button onclick="goToReport()"
+        class="px-3 py-1.5 rounded-md bg-brand hover:bg-brand-hover text-white text-xs font-medium transition flex items-center gap-1.5">
+        <i class="ph ph-file-text"></i> Build Report
+      </button>
+    </div>
+  </header>
 
-<div class="flex flex-1 min-w-0">
-  <main class="flex-1 min-w-0 overflow-y-auto">
-    <div class="max-w-[1180px] mx-auto px-6 lg:px-10 py-8 space-y-6">
+  <div class="flex flex-1 min-w-0">
+    <main class="flex-1 min-w-0 overflow-y-auto">
+      <div class="max-w-[1180px] mx-auto px-6 lg:px-10 py-8 space-y-6">
 
-      <!-- Page header -->
-      <div class="flex flex-wrap items-end justify-between gap-4 no-print">
-        <div>
-          <p class="text-[11px] uppercase tracking-[0.18em] text-brand font-semibold mb-1">Calibration &amp; Estimation</p>
-          <h1 class="text-[22px] font-semibold tracking-tight text-ink-900">Endotoxin Assay Calibration Tool</h1>
-          <p class="text-[13px] text-ink-500 mt-0.5">Type in standards and sample readings — no coding required.</p>
-        </div>
-      </div>
-
-      <!-- Tab rail -->
-      <div class="flex items-center gap-6 border-b hairline text-[13px] no-print">
-        <button id="tabBtn-cal" onclick="showTab('cal')" class="tab-active pb-2.5 px-1 transition">Standard Curve</button>
-        <button id="tabBtn-est" onclick="showTab('est')" class="tab-inactive pb-2.5 px-1 transition hover:text-ink-700">Sample Estimator</button>
-        <button id="tabBtn-rep" onclick="showTab('rep')" class="tab-inactive pb-2.5 px-1 transition hover:text-ink-700">Validation Report</button>
-      </div>
-
-      <!-- ================= TAB: STANDARD CURVE ================= -->
-      <div id="view-cal" class="view active space-y-6">
-        <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
-
-          <!-- calibration input + plot -->
-          <div class="xl:col-span-8 bg-paper rounded-lg border hairline">
-            <div class="flex items-center justify-between px-5 py-3 border-b hairline">
-              <h2 class="text-[14px] font-semibold">Concentration vs. Absorbance</h2>
-              <span class="text-[11px] text-ink-400 num" id="calCount">0 points</span>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2">
-              <div class="p-4">
-                <table class="dt w-full text-[13px]">
-                  <thead>
-                    <tr class="text-[11px] uppercase tracking-wide text-ink-400">
-                      <th class="text-left pb-2">EU/mL</th><th class="text-left pb-2">Mean Abs</th><th class="text-left pb-2">Replicates (comma-separated, optional)</th><th></th>
-                    </tr>
-                  </thead>
-                  <tbody id="calBody"></tbody>
-                </table>
-                <div class="flex flex-wrap gap-2 mt-3">
-                  <button onclick="addCalRow()" class="px-3 py-1.5 rounded-md border hairline text-ink-700 text-xs font-medium hover:bg-slate-50">+ Add row</button>
-                  <button onclick="clearCal()" class="px-3 py-1.5 rounded-md border hairline text-ink-700 text-xs font-medium hover:bg-slate-50">Clear</button>
-                  <button onclick="computeCal()" class="px-3 py-1.5 rounded-md bg-brand hover:bg-brand-hover text-white text-xs font-medium">Compute calibration curve</button>
-                </div>
-                <p class="text-[11px] text-ink-400 mt-2">Tip: include a 0 EU/mL standard if you have one — it anchors the line correctly.</p>
-                <div class="mt-3 grid grid-cols-1 gap-2">
-                  <label class="text-[11px] text-ink-500">Calibration model
-                    <select id="modelSelect" class="mt-1 w-full border hairline rounded-md px-2 py-1.5 text-xs bg-white">
-                      <option value="linear" selected>Linear</option>
-                      <option value="quadratic">Quadratic (exploratory)</option>
-                      <option value="auto">Auto (experimental — not recommended; unreliable on small/noisy datasets, see hint below)</option>
-                    </select>
-                  </label>
-                  <div id="modelHint" class="text-[11px] text-ink-400">Temporary nonlinear handling: quadratic is used only as an exploratory model when selected/indicated; ambiguous roots are flagged rather than guessed.</div>
-                </div>
-              </div>
-              <div class="border-l hairline flex flex-col">
-                <div id="calPlot" class="w-full h-[280px]"></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- fit quality card -->
-          <div class="xl:col-span-4 bg-paper rounded-lg border hairline flex flex-col">
-            <div class="px-5 py-3 border-b hairline flex items-center justify-between">
-              <h2 class="text-[14px] font-semibold">Fit Quality</h2>
-              <span class="text-[11px] text-ink-400" id="calRunLabel2">Run 1</span>
-            </div>
-
-            <div id="fitBanner" class="mx-5 mt-4 mb-3 rounded-md border px-4 py-3 flex items-center justify-between bg-slate-50 border-slate-200">
-              <div class="flex items-center gap-2.5">
-                <span class="w-8 h-8 rounded-full bg-slate-100 text-ink-500 flex items-center justify-center"><i class="ph ph-minus-circle text-lg"></i></span>
-                <div><div class="text-[13px] font-semibold text-ink-700">No curve yet</div><div class="text-[11px] text-ink-500">Enter standards and compute</div></div>
-              </div>
-            </div>
-
-            <div class="px-5 space-y-4 flex-1">
-              <div class="flex items-center justify-between">
-                <div><div class="text-[13px] font-medium">R² (coefficient of determination)</div><div class="text-[11px] text-ink-400">Higher = tighter fit to your points</div></div>
-                <span class="text-[18px] font-semibold num text-ink-900" id="r2Val">—</span>
-              </div>
-              <div class="h-px bg-line"></div>
-              <div class="flex items-center justify-between">
-                <div><div class="text-[13px] font-medium">Slope</div></div>
-                <span class="text-[18px] font-semibold num text-ink-900" id="slopeVal">—</span>
-              </div>
-              <div class="h-px bg-line"></div>
-              <div class="flex items-center justify-between">
-                <div><div class="text-[13px] font-medium">Intercept</div></div>
-                <span class="text-[18px] font-semibold num text-ink-900" id="interceptVal">—</span>
-              </div>
-              <div class="h-px bg-line"></div>
-              <div class="flex items-center justify-between">
-                <div><div class="text-[13px] font-medium">Equation</div></div>
-                <span class="text-[13px] font-semibold num text-brand" id="eqnVal">—</span>
-              </div>
-            </div>
-
-            <div id="negWarning" style="display:none;" class="mx-5 mb-3 rounded-md border px-3 py-2 flex items-start gap-2 text-[11px] bg-amber-50 border-amber-200 text-amber-800">
-              <i class="ph ph-warning mt-0.5"></i>
-              <span>One or more standards has a negative EU/mL or absorbance value — double check these aren't data-entry or instrument errors before trusting this curve.</span>
-            </div>
-            <div id="negSlopeWarning" style="display:none;" class="mx-5 mb-3 rounded-md border px-3 py-2 flex items-start gap-2 text-[11px] bg-amber-50 border-amber-200 text-amber-800">
-              <i class="ph ph-trend-down mt-0.5"></i>
-              <span>Fitted slope is negative — absorbance decreases as concentration increases. If your assay is expected to respond upward, this suggests a data or setup problem worth checking before trusting estimates.</span>
-            </div>
-            <div class="px-5 py-3 border-t hairline flex items-start gap-2 text-[11px] text-ink-500">
-              <i class="ph ph-info text-amber-500 mt-0.5"></i>
-              <span>This is an experimental student-built assay, not a regulated kit — R² reflects fit quality only, not an official pass/fail threshold. R² cannot rule out curvature on its own, especially with few standards — always eyeball the plot for a bend the line doesn't capture.</span>
-            </div>
+        <!-- Page header -->
+        <div class="flex flex-wrap items-end justify-between gap-4 no-print">
+          <div>
+            <p class="text-[11px] uppercase tracking-[0.18em] text-brand font-semibold mb-1">Calibration &amp;
+              Estimation</p>
+            <h1 class="text-[22px] font-semibold tracking-tight text-ink-900">Endotoxin Assay Calibration Tool</h1>
+            <p class="text-[13px] text-ink-500 mt-0.5">Type in standards and sample readings — no coding required.</p>
           </div>
         </div>
-      </div>
 
-      <!-- ================= TAB: SAMPLE ESTIMATOR ================= -->
-      <div id="view-est" class="view space-y-6">
-        <div class="bg-paper rounded-lg border hairline">
-          <div class="flex flex-wrap items-center justify-between gap-3 px-5 py-3 border-b hairline">
-            <h2 class="text-[14px] font-semibold">Sample Estimator</h2>
-            <label class="flex items-center gap-2 text-[12px] text-ink-500">
-              Flag above
-              <input id="thresholdInput" type="number" value="0.5" step="0.1" class="w-16 font-mono text-[13px] px-2 py-1 border hairline rounded-md outline-none focus:border-brand">
-              EU/mL
-            </label>
+        <!-- Tab rail -->
+        <div class="flex items-center gap-6 border-b hairline text-[13px] no-print">
+          <button id="tabBtn-cal" onclick="showTab('cal')" class="tab-active pb-2.5 px-1 transition">Standard
+            Curve</button>
+          <button id="tabBtn-est" onclick="showTab('est')"
+            class="tab-inactive pb-2.5 px-1 transition hover:text-ink-700">Sample Estimator</button>
+          <button id="tabBtn-rep" onclick="showTab('rep')"
+            class="tab-inactive pb-2.5 px-1 transition hover:text-ink-700">Validation Report</button>
+        </div>
+
+        <!-- ================= TAB: STANDARD CURVE ================= -->
+        <div id="view-cal" class="view active space-y-6">
+          <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+
+            <!-- calibration input + plot -->
+            <div class="xl:col-span-8 bg-paper rounded-lg border hairline">
+              <div class="flex items-center justify-between px-5 py-3 border-b hairline">
+                <h2 class="text-[14px] font-semibold">Concentration vs. Absorbance</h2>
+                <span class="text-[11px] text-ink-400 num" id="calCount">0 points</span>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2">
+                <div class="p-4">
+                  <table class="dt w-full text-[13px]">
+                    <thead>
+                      <tr class="text-[11px] uppercase tracking-wide text-ink-400">
+                        <th class="text-left pb-2">EU/mL</th>
+                        <th class="text-left pb-2">Mean Abs</th>
+                        <th class="text-left pb-2">Replicates (comma-separated, optional)</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody id="calBody"></tbody>
+                  </table>
+                  <div class="flex flex-wrap gap-2 mt-3">
+                    <button onclick="addCalRow()"
+                      class="px-3 py-1.5 rounded-md border hairline text-ink-700 text-xs font-medium hover:bg-slate-50">+
+                      Add row</button>
+                    <button onclick="clearCal()"
+                      class="px-3 py-1.5 rounded-md border hairline text-ink-700 text-xs font-medium hover:bg-slate-50">Clear</button>
+                    <button onclick="computeCal()"
+                      class="px-3 py-1.5 rounded-md bg-brand hover:bg-brand-hover text-white text-xs font-medium">Compute
+                      calibration curve</button>
+                  </div>
+                  <p class="text-[11px] text-ink-400 mt-2">Tip: include a 0 EU/mL standard if you have one — it anchors
+                    the line correctly.</p>
+                  <div class="mt-3 grid grid-cols-1 gap-2">
+                    <label class="text-[11px] text-ink-500">Calibration model
+                      <select id="modelSelect"
+                        class="mt-1 w-full border hairline rounded-md px-2 py-1.5 text-xs bg-white">
+                        <option value="linear" selected>Linear</option>
+                        <option value="quadratic">Quadratic (exploratory)</option>
+                        <option value="auto">Auto (experimental — not recommended; unreliable on small/noisy datasets,
+                          see hint below)</option>
+                      </select>
+                    </label>
+                    <div id="modelHint" class="text-[11px] text-ink-400">Temporary nonlinear handling: quadratic is used
+                      only as an exploratory model when selected/indicated; ambiguous roots are flagged rather than
+                      guessed.</div>
+                  </div>
+                </div>
+                <div class="border-l hairline flex flex-col">
+                  <div id="calPlot" class="w-full h-[280px]"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- fit quality card -->
+            <div class="xl:col-span-4 bg-paper rounded-lg border hairline flex flex-col">
+              <div class="px-5 py-3 border-b hairline flex items-center justify-between">
+                <h2 class="text-[14px] font-semibold">Fit Quality</h2>
+                <span class="text-[11px] text-ink-400" id="calRunLabel2">Run 1</span>
+              </div>
+
+              <div id="fitBanner"
+                class="mx-5 mt-4 mb-3 rounded-md border px-4 py-3 flex items-center justify-between bg-slate-50 border-slate-200">
+                <div class="flex items-center gap-2.5">
+                  <span class="w-8 h-8 rounded-full bg-slate-100 text-ink-500 flex items-center justify-center"><i
+                      class="ph ph-minus-circle text-lg"></i></span>
+                  <div>
+                    <div class="text-[13px] font-semibold text-ink-700">No curve yet</div>
+                    <div class="text-[11px] text-ink-500">Enter standards and compute</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="px-5 space-y-4 flex-1">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="text-[13px] font-medium">R² (coefficient of determination)</div>
+                    <div class="text-[11px] text-ink-400">Higher = tighter fit to your points</div>
+                  </div>
+                  <span class="text-[18px] font-semibold num text-ink-900" id="r2Val">—</span>
+                </div>
+                <div class="h-px bg-line"></div>
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="text-[13px] font-medium">Slope</div>
+                  </div>
+                  <span class="text-[18px] font-semibold num text-ink-900" id="slopeVal">—</span>
+                </div>
+                <div class="h-px bg-line"></div>
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="text-[13px] font-medium">Intercept</div>
+                  </div>
+                  <span class="text-[18px] font-semibold num text-ink-900" id="interceptVal">—</span>
+                </div>
+                <div class="h-px bg-line"></div>
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="text-[13px] font-medium">Equation</div>
+                  </div>
+                  <span class="text-[13px] font-semibold num text-brand" id="eqnVal">—</span>
+                </div>
+              </div>
+
+              <div id="negWarning" style="display:none;"
+                class="mx-5 mb-3 rounded-md border px-3 py-2 flex items-start gap-2 text-[11px] bg-amber-50 border-amber-200 text-amber-800">
+                <i class="ph ph-warning mt-0.5"></i>
+                <span>One or more standards has a negative EU/mL or absorbance value — double check these aren't
+                  data-entry or instrument errors before trusting this curve.</span>
+              </div>
+              <div id="negSlopeWarning" style="display:none;"
+                class="mx-5 mb-3 rounded-md border px-3 py-2 flex items-start gap-2 text-[11px] bg-amber-50 border-amber-200 text-amber-800">
+                <i class="ph ph-trend-down mt-0.5"></i>
+                <span>Fitted slope is negative — absorbance decreases as concentration increases. If your assay is
+                  expected to respond upward, this suggests a data or setup problem worth checking before trusting
+                  estimates.</span>
+              </div>
+              <div class="px-5 py-3 border-t hairline flex items-start gap-2 text-[11px] text-ink-500">
+                <i class="ph ph-info text-amber-500 mt-0.5"></i>
+                <span>This is an experimental student-built assay, not a regulated kit — R² reflects fit quality only,
+                  not an official pass/fail threshold. R² cannot rule out curvature on its own, especially with few
+                  standards — always eyeball the plot for a bend the line doesn't capture.</span>
+              </div>
+            </div>
           </div>
+        </div>
 
-          <div class="p-5">
-            <table class="dt w-full text-[13px]">
-              <thead>
-                <tr class="text-[11px] uppercase tracking-wide text-ink-400">
-                  <th class="text-left pb-2 w-1/3">Sample name</th><th class="text-left pb-2 w-1/4">Mean Abs</th><th class="text-left pb-2 w-1/3">Replicates (comma-separated, optional)</th><th></th>
-                </tr>
-              </thead>
-              <tbody id="sampleBody"></tbody>
-            </table>
-            <div class="flex flex-wrap gap-2 mt-3">
-              <button onclick="addSampleRow()" class="px-3 py-1.5 rounded-md border hairline text-ink-700 text-xs font-medium hover:bg-slate-50">+ Add row</button>
-              <button onclick="clearSamples()" class="px-3 py-1.5 rounded-md border hairline text-ink-700 text-xs font-medium hover:bg-slate-50">Clear</button>
-              <button onclick="togglePaste()" class="px-3 py-1.5 rounded-md border hairline text-ink-700 text-xs font-medium hover:bg-slate-50">Paste multiple rows</button>
-              <button id="estimateBtn" onclick="estimate()" disabled class="px-3 py-1.5 rounded-md bg-brand hover:bg-brand-hover text-white text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed">Estimate concentrations</button>
+        <!-- ================= TAB: SAMPLE ESTIMATOR ================= -->
+        <div id="view-est" class="view space-y-6">
+          <div class="bg-paper rounded-lg border hairline">
+            <div class="flex flex-wrap items-center justify-between gap-3 px-5 py-3 border-b hairline">
+              <h2 class="text-[14px] font-semibold">Sample Estimator</h2>
+              <label class="flex items-center gap-2 text-[12px] text-ink-500">
+                Flag above
+                <input id="thresholdInput" type="number" value="0.5" step="0.1"
+                  class="w-16 font-mono text-[13px] px-2 py-1 border hairline rounded-md outline-none focus:border-brand">
+                EU/mL
+              </label>
             </div>
-            <div id="pasteBox" class="hidden mt-3">
-              <p class="text-[11px] text-ink-500 mb-1.5">One per line, as <span class="font-mono">name, absorbance</span></p>
-              <textarea id="pasteArea" rows="3" class="w-full text-[13px] font-mono p-2.5 border hairline rounded-md outline-none focus:border-brand"></textarea>
-              <button onclick="importPaste()" class="mt-2 px-3 py-1.5 rounded-md bg-brand hover:bg-brand-hover text-white text-xs font-medium">Import rows</button>
-            </div>
-            <p id="estimateHint" class="text-[11px] text-ink-400 mt-2">Compute the calibration curve in the Standard Curve tab first.</p>
-          </div>
 
-          <div class="border-t hairline">
-            <div class="flex items-center justify-between px-5 py-3">
-              <h3 class="text-[13px] font-semibold text-ink-700">Results</h3>
-              <button onclick="downloadCsv()" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border hairline text-ink-700 text-xs font-medium hover:bg-slate-50"><i class="ph ph-export"></i> Download CSV</button>
-            </div>
-            <div class="overflow-x-auto">
-              <table class="w-full text-[13px] border-collapse">
+            <div class="p-5">
+              <table class="dt w-full text-[13px]">
                 <thead>
-                  <tr class="text-left text-[11px] uppercase tracking-wide text-ink-400 border-y hairline bg-canvas/60">
-                    <th class="px-5 py-2.5 font-medium">Sample</th>
-                    <th class="px-5 py-2.5 font-medium">Absorbance</th>
-                    <th class="px-5 py-2.5 font-medium">Estimated EU/mL</th>
-                    <th class="px-5 py-2.5 font-medium text-right">Status</th>
+                  <tr class="text-[11px] uppercase tracking-wide text-ink-400">
+                    <th class="text-left pb-2 w-1/3">Sample name</th>
+                    <th class="text-left pb-2 w-1/4">Mean Abs</th>
+                    <th class="text-left pb-2 w-1/3">Replicates (comma-separated, optional)</th>
+                    <th></th>
                   </tr>
                 </thead>
-                <tbody id="resultsBody" class="divide-y hairline">
-                  <tr><td colspan="4" class="px-5 py-6 text-ink-400 text-[13px] italic">No results yet.</td></tr>
-                </tbody>
+                <tbody id="sampleBody"></tbody>
               </table>
+              <div class="flex flex-wrap gap-2 mt-3">
+                <button onclick="addSampleRow()"
+                  class="px-3 py-1.5 rounded-md border hairline text-ink-700 text-xs font-medium hover:bg-slate-50">+
+                  Add row</button>
+                <button onclick="clearSamples()"
+                  class="px-3 py-1.5 rounded-md border hairline text-ink-700 text-xs font-medium hover:bg-slate-50">Clear</button>
+                <button onclick="togglePaste()"
+                  class="px-3 py-1.5 rounded-md border hairline text-ink-700 text-xs font-medium hover:bg-slate-50">Paste
+                  multiple rows</button>
+                <button id="estimateBtn" onclick="estimate()" disabled
+                  class="px-3 py-1.5 rounded-md bg-brand hover:bg-brand-hover text-white text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed">Estimate
+                  concentrations</button>
+              </div>
+              <div id="pasteBox" class="hidden mt-3">
+                <p class="text-[11px] text-ink-500 mb-1.5">One per line, as <span class="font-mono">name,
+                    absorbance</span></p>
+                <textarea id="pasteArea" rows="3"
+                  class="w-full text-[13px] font-mono p-2.5 border hairline rounded-md outline-none focus:border-brand"></textarea>
+                <button onclick="importPaste()"
+                  class="mt-2 px-3 py-1.5 rounded-md bg-brand hover:bg-brand-hover text-white text-xs font-medium">Import
+                  rows</button>
+              </div>
+              <p id="estimateHint" class="text-[11px] text-ink-400 mt-2">Compute the calibration curve in the Standard
+                Curve tab first.</p>
+            </div>
+
+            <div class="border-t hairline">
+              <div class="flex items-center justify-between px-5 py-3">
+                <h3 class="text-[13px] font-semibold text-ink-700">Results</h3>
+                <button onclick="downloadCsv()"
+                  class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border hairline text-ink-700 text-xs font-medium hover:bg-slate-50"><i
+                    class="ph ph-export"></i> Download CSV</button>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-[13px] border-collapse">
+                  <thead>
+                    <tr
+                      class="text-left text-[11px] uppercase tracking-wide text-ink-400 border-y hairline bg-canvas/60">
+                      <th class="px-5 py-2.5 font-medium">Sample</th>
+                      <th class="px-5 py-2.5 font-medium">Absorbance</th>
+                      <th class="px-5 py-2.5 font-medium">Estimated EU/mL</th>
+                      <th class="px-5 py-2.5 font-medium text-right">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="resultsBody" class="divide-y hairline">
+                    <tr>
+                      <td colspan="4" class="px-5 py-6 text-ink-400 text-[13px] italic">No results yet.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- ================= TAB: VALIDATION REPORT ================= -->
-      <div id="view-rep" class="view">
-        <div class="flex items-center justify-end gap-2 mb-3 no-print">
-          <button onclick="window.print()" class="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover transition"><i class="ph ph-printer"></i> Print / Save as PDF</button>
+        <!-- ================= TAB: VALIDATION REPORT ================= -->
+        <div id="view-rep" class="view">
+          <div class="flex items-center justify-end gap-2 mb-3 no-print">
+            <button onclick="window.print()"
+              class="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover transition"><i
+                class="ph ph-printer"></i> Print / Save as PDF</button>
+          </div>
+
+          <article class="page-sheet border hairline relative">
+            <header class="flex justify-between items-start mb-8 report-header-line pb-6">
+              <div class="space-y-3">
+                <div class="flex items-center gap-2 text-brand">
+                  <i class="ph-fill ph-flask text-2xl"></i>
+                  <span class="text-lg font-bold tracking-tight text-ink-900">Endotoxin Kit — Calibration Report</span>
+                </div>
+                <p class="text-ink-500 font-medium text-sm">Archachatina marginata-based assay · student research
+                  project</p>
+              </div>
+              <div class="text-right space-y-1 text-sm">
+                <div class="text-[10px] uppercase tracking-[0.1em] text-ink-400 font-bold">Run</div>
+                <div class="num font-semibold" id="repRunLabel">Run 1</div>
+                <div class="text-ink-500 num" id="repDate">—</div>
+              </div>
+            </header>
+
+            <section class="mb-8 bg-slate-50 border-l-4 border-brand p-4 rounded-r-lg">
+              <h3 class="text-xs uppercase tracking-widest text-brand font-bold mb-2">Summary</h3>
+              <p class="text-sm text-ink-700 leading-relaxed" id="repSummary">Compute a calibration curve and estimate
+                samples to generate this summary.</p>
+            </section>
+
+            <section class="mb-8">
+              <h3 class="text-xs uppercase tracking-widest text-brand font-bold mb-3">Calibration Statistics</h3>
+              <div class="grid grid-cols-3 gap-4 mb-5">
+                <div class="p-3 bg-white border hairline rounded-lg">
+                  <div class="text-[10px] text-ink-400 uppercase font-bold mb-1">R²</div>
+                  <div class="text-lg font-bold num" id="repR2">—</div>
+                </div>
+                <div class="p-3 bg-white border hairline rounded-lg">
+                  <div class="text-[10px] text-ink-400 uppercase font-bold mb-1">Slope</div>
+                  <div class="text-lg font-bold num" id="repSlope">—</div>
+                </div>
+                <div class="p-3 bg-white border hairline rounded-lg">
+                  <div class="text-[10px] text-ink-400 uppercase font-bold mb-1">Intercept</div>
+                  <div class="text-lg font-bold num" id="repIntercept">—</div>
+                </div>
+              </div>
+              <figure class="bg-white border hairline rounded-xl p-3">
+                <div id="repPlot" class="w-full h-[260px]"></div>
+                <figcaption class="text-center text-[10px] text-ink-400 mt-1 italic">Figure 1 — Calibration curve:
+                  standards (●) and fitted line.</figcaption>
+              </figure>
+            </section>
+
+            <section class="mb-10">
+              <h3 class="text-xs uppercase tracking-widest text-brand font-bold mb-3">Sample Results</h3>
+              <table class="w-full text-xs text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-50 border-y hairline">
+                    <th class="px-3 py-2 font-bold">Sample</th>
+                    <th class="px-3 py-2 font-bold">Absorbance</th>
+                    <th class="px-3 py-2 font-bold">Estimated EU/mL</th>
+                    <th class="px-3 py-2 font-bold">Replicates</th>
+                    <th class="px-3 py-2 font-bold text-right">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="repResultsBody" class="divide-y hairline"></tbody>
+              </table>
+            </section>
+
+            <section class="mt-14 pt-6 border-t-2 hairline grid grid-cols-2 gap-16">
+              <div>
+                <div class="h-10 border-b border-slate-400"></div>
+                <div class="mt-2 text-xs font-bold text-ink-900">Student / analyst signature</div>
+                <div class="text-[10px] text-ink-400 uppercase tracking-tighter">Name &amp; date</div>
+              </div>
+              <div>
+                <div class="h-10 border-b border-slate-400"></div>
+                <div class="mt-2 text-xs font-bold text-ink-900">Supervisor review</div>
+                <div class="text-[10px] text-ink-400 uppercase tracking-tighter">Name &amp; date</div>
+              </div>
+            </section>
+
+            <footer
+              class="mt-8 text-[10px] text-slate-300 uppercase tracking-[0.2em] font-semibold border-t border-slate-50 pt-3 text-center">
+              Proof-of-concept tool — not a validated diagnostic method
+            </footer>
+          </article>
         </div>
 
-        <article class="page-sheet border hairline relative">
-          <header class="flex justify-between items-start mb-8 report-header-line pb-6">
-            <div class="space-y-3">
-              <div class="flex items-center gap-2 text-brand">
-                <i class="ph-fill ph-flask text-2xl"></i>
-                <span class="text-lg font-bold tracking-tight text-ink-900">Endotoxin Kit — Calibration Report</span>
-              </div>
-              <p class="text-ink-500 font-medium text-sm">Archachatina marginata-based assay · student research project</p>
-            </div>
-            <div class="text-right space-y-1 text-sm">
-              <div class="text-[10px] uppercase tracking-[0.1em] text-ink-400 font-bold">Run</div>
-              <div class="num font-semibold" id="repRunLabel">Run 1</div>
-              <div class="text-ink-500 num" id="repDate">—</div>
-            </div>
-          </header>
-
-          <section class="mb-8 bg-slate-50 border-l-4 border-brand p-4 rounded-r-lg">
-            <h3 class="text-xs uppercase tracking-widest text-brand font-bold mb-2">Summary</h3>
-            <p class="text-sm text-ink-700 leading-relaxed" id="repSummary">Compute a calibration curve and estimate samples to generate this summary.</p>
-          </section>
-
-          <section class="mb-8">
-            <h3 class="text-xs uppercase tracking-widest text-brand font-bold mb-3">Calibration Statistics</h3>
-            <div class="grid grid-cols-3 gap-4 mb-5">
-              <div class="p-3 bg-white border hairline rounded-lg">
-                <div class="text-[10px] text-ink-400 uppercase font-bold mb-1">R²</div>
-                <div class="text-lg font-bold num" id="repR2">—</div>
-              </div>
-              <div class="p-3 bg-white border hairline rounded-lg">
-                <div class="text-[10px] text-ink-400 uppercase font-bold mb-1">Slope</div>
-                <div class="text-lg font-bold num" id="repSlope">—</div>
-              </div>
-              <div class="p-3 bg-white border hairline rounded-lg">
-                <div class="text-[10px] text-ink-400 uppercase font-bold mb-1">Intercept</div>
-                <div class="text-lg font-bold num" id="repIntercept">—</div>
-              </div>
-            </div>
-            <figure class="bg-white border hairline rounded-xl p-3">
-              <div id="repPlot" class="w-full h-[260px]"></div>
-              <figcaption class="text-center text-[10px] text-ink-400 mt-1 italic">Figure 1 — Calibration curve: standards (●) and fitted line.</figcaption>
-            </figure>
-          </section>
-
-          <section class="mb-10">
-            <h3 class="text-xs uppercase tracking-widest text-brand font-bold mb-3">Sample Results</h3>
-            <table class="w-full text-xs text-left border-collapse">
-              <thead>
-                <tr class="bg-slate-50 border-y hairline">
-                  <th class="px-3 py-2 font-bold">Sample</th>
-                  <th class="px-3 py-2 font-bold">Absorbance</th>
-                  <th class="px-3 py-2 font-bold">Estimated EU/mL</th>
-                  <th class="px-3 py-2 font-bold">Replicates</th>
-                  <th class="px-3 py-2 font-bold text-right">Status</th>
-                </tr>
-              </thead>
-              <tbody id="repResultsBody" class="divide-y hairline"></tbody>
-            </table>
-          </section>
-
-          <section class="mt-14 pt-6 border-t-2 hairline grid grid-cols-2 gap-16">
-            <div>
-              <div class="h-10 border-b border-slate-400"></div>
-              <div class="mt-2 text-xs font-bold text-ink-900">Student / analyst signature</div>
-              <div class="text-[10px] text-ink-400 uppercase tracking-tighter">Name &amp; date</div>
-            </div>
-            <div>
-              <div class="h-10 border-b border-slate-400"></div>
-              <div class="mt-2 text-xs font-bold text-ink-900">Supervisor review</div>
-              <div class="text-[10px] text-ink-400 uppercase tracking-tighter">Name &amp; date</div>
-            </div>
-          </section>
-
-          <footer class="mt-8 text-[10px] text-slate-300 uppercase tracking-[0.2em] font-semibold border-t border-slate-50 pt-3 text-center">
-            Proof-of-concept tool — not a validated diagnostic method
-          </footer>
-        </article>
       </div>
+    </main>
+  </div>
 
-    </div>
-  </main>
-</div>
+  <script>
+    let calibration = null;
+    let lastResults = [];
 
-<script>
-let calibration = null;
-let lastResults = [];
-
-/* ---------- shared table row helpers ---------- */
-function makeRow(container, ph1, ph2, ph3, type1='number'){
-  const tr = document.createElement('tr');
-  tr.innerHTML = `
+    /* ---------- shared table row helpers ---------- */
+    function makeRow(container, ph1, ph2, ph3, type1 = 'number') {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
     <td class="py-1 pr-2"><input type="${type1}" step="any" placeholder="${ph1}"></td>
     <td class="py-1 pr-2"><input type="number" step="any" placeholder="${ph2}"></td>
     <td class="py-1 pr-2"><input type="text" placeholder="${ph3}"></td>
     <td class="py-1 w-6 text-center"><span class="rm-btn" onclick="this.closest('tr').remove()">✕</span></td>
   `;
-  container.appendChild(tr);
-  const meanInput = tr.children[1].querySelector('input');
-  const repInput = tr.children[2].querySelector('input');
-  repInput.addEventListener('input', ()=>{
-    const reps = parseReplicates(repInput.value);
-    if(reps.length){
-      meanInput.value = mean(reps).toFixed(4);
-      meanInput.readOnly = true;
-      meanInput.title = 'Auto-computed from replicates — clear the replicates field to edit this directly.';
-      meanInput.classList.add('opacity-60');
-    } else {
-      meanInput.readOnly = false;
-      meanInput.title = '';
-      meanInput.classList.remove('opacity-60');
+      container.appendChild(tr);
+      const meanInput = tr.children[1].querySelector('input');
+      const repInput = tr.children[2].querySelector('input');
+      repInput.addEventListener('input', () => {
+        const reps = parseReplicates(repInput.value);
+        if (reps.length) {
+          meanInput.value = mean(reps).toFixed(4);
+          meanInput.readOnly = true;
+          meanInput.title = 'Auto-computed from replicates — clear the replicates field to edit this directly.';
+          meanInput.classList.add('opacity-60');
+        } else {
+          meanInput.readOnly = false;
+          meanInput.title = '';
+          meanInput.classList.remove('opacity-60');
+        }
+      });
+      return tr;
     }
-  });
-  return tr;
-}
-function addCalRow(eu='',abs='',reps=''){
-  const tr = makeRow(document.getElementById('calBody'),'e.g. 5','e.g. 0.108','e.g. 0.108, 0.112, 0.109');
-  tr.children[0].querySelector('input').value = eu;
-  tr.children[1].querySelector('input').value = abs;
-  tr.children[2].querySelector('input').value = reps;
-  if(reps) tr.children[2].querySelector('input').dispatchEvent(new Event('input'));
-}
-function addSampleRow(name='',abs='',reps=''){
-  const tr = makeRow(document.getElementById('sampleBody'),'e.g. Sample 1','e.g. 0.015','e.g. 0.014, 0.016, 0.015','text');
-  tr.children[0].querySelector('input').value = name;
-  tr.children[1].querySelector('input').value = abs;
-  tr.children[2].querySelector('input').value = reps;
-  if(reps) tr.children[2].querySelector('input').dispatchEvent(new Event('input'));
-}
-for(let i=0;i<4;i++) addCalRow();
-for(let i=0;i<3;i++) addSampleRow();
-
-function clearCal(){
-  document.getElementById('calBody').innerHTML='';
-  for(let i=0;i<4;i++) addCalRow();
-  calibration = null;
-  updateFitCard();
-  drawCalPlot();
-  document.getElementById('estimateBtn').disabled = true;
-  document.getElementById('estimateHint').style.display='block';
-}
-function clearSamples(){
-  document.getElementById('sampleBody').innerHTML='';
-  for(let i=0;i<3;i++) addSampleRow();
-}
-function togglePaste(){
-  const el = document.getElementById('pasteBox');
-  el.classList.toggle('hidden');
-}
-function importPaste(){
-  const raw = document.getElementById('pasteArea').value.trim();
-  if(!raw) return;
-  raw.split('\n').forEach(line=>{
-    const parts = line.split(',');
-    if(parts.length>=2){
-      const name = parts.shift().trim();
-      const abs = parts.length ? parts.shift().trim() : '';
-      const reps = parts.join(',').trim();
-      addSampleRow(name, abs, reps);
+    function addCalRow(eu = '', abs = '', reps = '') {
+      const tr = makeRow(document.getElementById('calBody'), 'e.g. 5', 'e.g. 0.108', 'e.g. 0.108, 0.112, 0.109');
+      tr.children[0].querySelector('input').value = eu;
+      tr.children[1].querySelector('input').value = abs;
+      tr.children[2].querySelector('input').value = reps;
+      if (reps) tr.children[2].querySelector('input').dispatchEvent(new Event('input'));
     }
-  });
-  document.getElementById('pasteArea').value='';
-}
-
-/* ---------- tabs ---------- */
-function showTab(name){
-  ['cal','est','rep'].forEach(t=>{
-    document.getElementById('view-'+t).classList.toggle('active', t===name);
-    const btn = document.getElementById('tabBtn-'+t);
-    btn.classList.toggle('tab-active', t===name);
-    btn.classList.toggle('tab-inactive', t!==name);
-  });
-  if(name==='cal') setTimeout(drawCalPlot,10);
-  if(name==='rep') setTimeout(buildReport,10);
-}
-function goToReport(){ showTab('rep'); }
-
-/* ---------- regression ---------- */
-function mean(values){ return values.reduce((a,b)=>a+b,0)/values.length; }
-function sd(values){
-  if(values.length<2) return NaN;
-  const m=mean(values); return Math.sqrt(values.reduce((a,v)=>a+(v-m)**2,0)/(values.length-1));
-}
-function parseReplicates(raw){
-  if(!raw) return [];
-  return raw.split(/[,;\s]+/).map(v=>parseFloat(v)).filter(Number.isFinite);
-}
-function summarizeReplicates(meanValue, raw){
-  const reps=parseReplicates(raw);
-  const values=reps.length ? reps : (Number.isFinite(meanValue) ? [meanValue] : []);
-  const m=values.length ? mean(values) : NaN;
-  const s=sd(values);
-  const cv=(Number.isFinite(s) && m!==0) ? Math.abs(s/m*100) : NaN;
-  return {values, mean:m, sd:s, cv, n:values.length};
-}
-
-function linreg(points){
-  const n=points.length;
-  if(n<2) return {slope:NaN,intercept:NaN,r2:NaN};
-  const sx=points.reduce((a,p)=>a+p[0],0);
-  const sy=points.reduce((a,p)=>a+p[1],0);
-  const sxy=points.reduce((a,p)=>a+p[0]*p[1],0);
-  const sxx=points.reduce((a,p)=>a+p[0]*p[0],0);
-  const den=n*sxx-sx*sx;
-  if(Math.abs(den)<1e-12) return {slope:NaN,intercept:NaN,r2:NaN};
-  const slope=(n*sxy-sx*sy)/den;
-  const intercept=(sy-slope*sx)/n;
-  const meanY=sy/n;
-  const ssTot=points.reduce((a,p)=>a+(p[1]-meanY)**2,0);
-  const ssRes=points.reduce((a,p)=>a+(p[1]-(slope*p[0]+intercept))**2,0);
-  const r2=ssTot===0?NaN:1-ssRes/ssTot;
-  return {slope,intercept,r2};
-}
-
-function quadreg(points){
-  if(points.length<3) return {a:NaN,b:NaN,c:NaN,r2:NaN};
-  let s0=points.length,s1=0,s2=0,s3=0,s4=0,t0=0,t1=0,t2=0;
-  for(const [x,y] of points){
-    const x2=x*x;
-    s1+=x; s2+=x2; s3+=x2*x; s4+=x2*x2;
-    t0+=y; t1+=x*y; t2+=x2*y;
-  }
-  const A=[[s4,s3,s2],[s3,s2,s1],[s2,s1,s0]];
-  const B=[t2,t1,t0];
-  const M=A.map((r,i)=>[...r,B[i]]);
-  for(let col=0;col<3;col++){
-    let pivot=col;
-    for(let r=col+1;r<3;r++) if(Math.abs(M[r][col])>Math.abs(M[pivot][col])) pivot=r;
-    if(Math.abs(M[pivot][col])<1e-12) return {a:NaN,b:NaN,c:NaN,r2:NaN};
-    [M[col],M[pivot]]=[M[pivot],M[col]];
-    const pv=M[col][col]; for(let j=col;j<4;j++) M[col][j]/=pv;
-    for(let r=0;r<3;r++) if(r!==col){ const f=M[r][col]; for(let j=col;j<4;j++) M[r][j]-=f*M[col][j]; }
-  }
-  const [a,b,c]=[M[0][3],M[1][3],M[2][3]];
-  const meanY=points.reduce((q,p)=>q+p[1],0)/points.length;
-  const ssTot=points.reduce((q,p)=>q+(p[1]-meanY)**2,0);
-  const ssRes=points.reduce((q,p)=>q+(p[1]-(a*p[0]*p[0]+b*p[0]+c))**2,0);
-  const r2=ssTot===0?NaN:1-ssRes/ssTot;
-  return {a,b,c,r2};
-}
-
-function quadPredict(model,x){ return model.a*x*x+model.b*x+model.c; }
-function chooseModel(points, requested){
-  const linear=linreg(points);
-  const quad=quadreg(points);
-  if(requested==='linear') return {type:'linear',...linear, quad};
-  if(requested==='quadratic') return {type:'quadratic',...quad, linear};
-  if(points.length>=5 && Number.isFinite(quad.r2) && Number.isFinite(linear.r2) && (quad.r2-linear.r2)>=0.03){
-    return {type:'quadratic',...quad, linear, exploratory:true};
-  }
-  return {type:'linear',...linear, quad};
-}
-function invertQuadratic(model,y,xMin,xMax){
-  const A=model.a,B=model.b,C=model.c-y;
-  if(Math.abs(A)<1e-12) return {roots:[(y-model.c)/model.b],ambiguous:false};
-  const disc=B*B-4*A*C;
-  if(disc<0) return {roots:[],ambiguous:false};
-  const r=Math.sqrt(disc);
-  const roots=[(-B+r)/(2*A),(-B-r)/(2*A)].filter(Number.isFinite).filter(x=>x>=xMin-1e-10 && x<=xMax+1e-10);
-  const unique=[...new Set(roots.map(v=>Number(v.toPrecision(12))))];
-  return {roots:unique,ambiguous:unique.length>1};
-}
-
-function readCalPoints(){
-  const pts=[];
-  const meta=[];
-  Array.from(document.getElementById('calBody').children).forEach(tr=>{
-    const x=parseFloat(tr.children[0].querySelector('input').value);
-    const meanInput=parseFloat(tr.children[1].querySelector('input').value);
-    const raw=tr.children[2].querySelector('input').value.trim();
-    if(!Number.isFinite(x)) return;
-    const summary=summarizeReplicates(meanInput,raw);
-    if(Number.isFinite(summary.mean)){
-      pts.push([x,summary.mean]);
-      meta.push({eu:x,mean:summary.mean,sd:summary.sd,cv:summary.cv,n:summary.n,replicates:summary.values});
+    function addSampleRow(name = '', abs = '', reps = '') {
+      const tr = makeRow(document.getElementById('sampleBody'), 'e.g. Sample 1', 'e.g. 0.015', 'e.g. 0.014, 0.016, 0.015', 'text');
+      tr.children[0].querySelector('input').value = name;
+      tr.children[1].querySelector('input').value = abs;
+      tr.children[2].querySelector('input').value = reps;
+      if (reps) tr.children[2].querySelector('input').dispatchEvent(new Event('input'));
     }
-  });
-  return {points:pts,meta};
-}
-function readSamples(){
-  const s=[];
-  Array.from(document.getElementById('sampleBody').children).forEach(tr=>{
-    const name=tr.children[0].querySelector('input').value.trim();
-    const meanInput=parseFloat(tr.children[1].querySelector('input').value);
-    const raw=tr.children[2].querySelector('input').value.trim();
-    const summary=summarizeReplicates(meanInput,raw);
-    if(name && Number.isFinite(summary.mean)) s.push({name,abs:summary.mean,sd:summary.sd,cv:summary.cv,n:summary.n,replicates:summary.values});
-  });
-  return s;
-}
+    for (let i = 0; i < 4; i++) addCalRow();
+    for (let i = 0; i < 3; i++) addSampleRow();
 
-function computeCal(){
-  const read=readCalPoints();
-  const pts=read.points;
-  if(pts.length<2){ alert('Add at least two calibration standards with valid absorbance data.'); return; }
-  const estBtn=document.getElementById('estimateBtn');
-  const hint=document.getElementById('estimateHint');
-  const uniqueEU=new Set(pts.map(p=>p[0]));
-  if(uniqueEU.size<2){
-    calibration=null; updateFitCard(); estBtn.disabled=true; hint.textContent='Calibration rejected: at least two distinct concentrations are required.'; hint.style.display='block';
-    return;
-  }
-  if(pts.some(p=>p[0]<0)){
-    calibration=null; updateFitCard(); estBtn.disabled=true; hint.textContent='Calibration rejected: endotoxin concentrations cannot be negative.'; hint.style.display='block'; return;
-  }
-  const requested=document.getElementById('modelSelect').value;
-  const fit=chooseModel(pts,requested);
-  const zeroSlope=fit.type==='linear' && (!Number.isFinite(fit.slope) || Math.abs(fit.slope)<1e-9);
-  if(zeroSlope){ calibration=null; updateFitCard(true); estBtn.disabled=true; hint.textContent='Calibration rejected: zero/undefined slope — absorbance does not respond to concentration.'; hint.style.display='block'; return; }
-  if(fit.type==='quadratic' && (!Number.isFinite(fit.a)||!Number.isFinite(fit.b)||!Number.isFinite(fit.c))){
-    calibration=null; updateFitCard(); estBtn.disabled=true; hint.textContent='Quadratic calibration could not be solved; use linear mode or revise standards.'; hint.style.display='block'; return;
-  }
-  calibration={...fit,points:pts,meta:read.meta,model:fit.type,requestedModel:requested,xMin:Math.min(...pts.map(p=>p[0])),xMax:Math.max(...pts.map(p=>p[0]))};
-  updateFitCard(false);
-  estBtn.disabled=false; hint.style.display='none';
-  const hasNegative=read.meta.some(m=>m.mean<0 || (m.replicates||[]).some(v=>v<0));
-  const warnEl=document.getElementById('negWarning'); if(warnEl) warnEl.style.display=hasNegative?'block':'none';
-  const slopeWarnEl=document.getElementById('negSlopeWarning'); if(slopeWarnEl) slopeWarnEl.style.display=(fit.type==='linear'&&fit.slope<0)?'block':'none';
-  const modelHint=document.getElementById('modelHint');
-  if(modelHint) modelHint.textContent = fit.type==='quadratic'
-    ? `Quadratic model selected (${requested==='auto'?'automatic exploratory detection':'manual selection'}). Treat results as exploratory; inversion is only accepted when exactly one root falls inside the calibration range.`
-    : 'Linear model active. Automatic mode switches to quadratic only when the quadratic fit improves R² materially; review the plotted curve before relying on a nonlinear model.';
-  try { drawCalPlot(); } catch(e){ console.warn('Chart render skipped:',e); }
-}
-
-function updateFitCard(zeroSlope){
-  const banner=document.getElementById('fitBanner');
-  if(!calibration){
-    document.getElementById('r2Val').textContent='—'; document.getElementById('slopeVal').textContent='—'; document.getElementById('interceptVal').textContent='—'; document.getElementById('eqnVal').textContent='—';
-    banner.className='mx-5 mt-4 mb-3 rounded-md border px-4 py-3 flex items-center justify-between bg-slate-50 border-slate-200';
-    banner.innerHTML='<div class="flex items-center gap-2.5"><span class="w-8 h-8 rounded-full bg-slate-100 text-ink-500 flex items-center justify-center"><i class="ph ph-minus-circle text-lg"></i></span><div><div class="text-[13px] font-semibold text-ink-700">No valid curve yet</div><div class="text-[11px] text-ink-500">Enter standards and compute</div></div></div>';
-    return;
-  }
-  const {model,r2}=calibration;
-  document.getElementById('r2Val').textContent=Number.isFinite(r2)?r2.toFixed(3):'undefined';
-  if(model==='quadratic'){
-    document.getElementById('slopeVal').textContent='—';
-    document.getElementById('interceptVal').textContent=calibration.c.toFixed(4);
-    document.getElementById('eqnVal').textContent=`y = ${calibration.a.toFixed(4)}x² ${calibration.b>=0?'+':'−'} ${Math.abs(calibration.b).toFixed(4)}x ${calibration.c>=0?'+':'−'} ${Math.abs(calibration.c).toFixed(4)}`;
-  } else {
-    document.getElementById('slopeVal').textContent=calibration.slope.toFixed(4);
-    document.getElementById('interceptVal').textContent=calibration.intercept.toFixed(4);
-    document.getElementById('eqnVal').textContent=`y = ${calibration.slope.toFixed(4)}x ${calibration.intercept>=0?'+':'−'} ${Math.abs(calibration.intercept).toFixed(4)}`;
-  }
-  if(zeroSlope){
-    banner.className='mx-5 mt-4 mb-3 rounded-md border px-4 py-3 flex items-center justify-between bg-rose-50 border-rose-200';
-    banner.innerHTML='<div class="flex items-center gap-2.5"><span class="w-8 h-8 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center"><i class="ph-fill ph-x-circle text-lg"></i></span><div><div class="text-[13px] font-semibold text-rose-800">Calibration rejected</div><div class="text-[11px] text-rose-600">Zero/undefined slope — absorbance does not respond to concentration</div></div></div>';
-  } else if(model==='quadratic'){
-    banner.className='mx-5 mt-4 mb-3 rounded-md border px-4 py-3 flex items-center justify-between bg-amber-50 border-amber-200';
-    banner.innerHTML='<div class="flex items-center gap-2.5"><span class="w-8 h-8 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center"><i class="ph-fill ph-warning text-lg"></i></span><div><div class="text-[13px] font-semibold text-amber-800">Exploratory nonlinear fit</div><div class="text-[11px] text-amber-600">Quadratic model — not a validated assay acceptance rule</div></div></div>';
-  } else if(r2>=0.9){
-    banner.className='mx-5 mt-4 mb-3 rounded-md border px-4 py-3 flex items-center justify-between bg-emerald-50 border-emerald-200';
-    banner.innerHTML='<div class="flex items-center gap-2.5"><span class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center"><i class="ph-fill ph-check-circle text-lg"></i></span><div><div class="text-[13px] font-semibold text-emerald-800">Strong linear fit</div><div class="text-[11px] text-emerald-600">R² ≥ 0.90 — fit quality only</div></div></div>';
-  } else if(r2>=0.7){
-    banner.className='mx-5 mt-4 mb-3 rounded-md border px-4 py-3 flex items-center justify-between bg-amber-50 border-amber-200';
-    banner.innerHTML='<div class="flex items-center gap-2.5"><span class="w-8 h-8 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center"><i class="ph-fill ph-warning text-lg"></i></span><div><div class="text-[13px] font-semibold text-amber-800">Moderate linear fit</div><div class="text-[11px] text-amber-600">Review scatter and assay criteria</div></div></div>';
-  } else {
-    banner.className='mx-5 mt-4 mb-3 rounded-md border px-4 py-3 flex items-center justify-between bg-rose-50 border-rose-200';
-    banner.innerHTML='<div class="flex items-center gap-2.5"><span class="w-8 h-8 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center"><i class="ph-fill ph-x-circle text-lg"></i></span><div><div class="text-[13px] font-semibold text-rose-800">Weak linear fit</div><div class="text-[11px] text-rose-600">R² &lt; 0.70 — do not treat as a validated calibration</div></div></div>';
-  }
-}
-
-function drawCalPlot(targetId){
-  targetId=targetId||'calPlot';
-  const pts=readCalPoints().points;
-  const traces=[];
-  if(pts.length) traces.push({x:pts.map(p=>p[0]),y:pts.map(p=>p[1]),mode:'markers',type:'scatter',name:'Standards',marker:{color:'#0f766e',size:9,line:{color:'white',width:1.5}}});
-  if(calibration){
-    const xMin=Math.min(0,...pts.map(p=>p[0])), xMax=Math.max(...pts.map(p=>p[0]));
-    const grid=Array.from({length:81},(_,i)=>xMin+(xMax-xMin)*i/80);
-    const ys=grid.map(x=>calibration.model==='quadratic'?quadPredict(calibration,x):calibration.slope*x+calibration.intercept);
-    traces.push({x:grid,y:ys,mode:'lines',type:'scatter',name:'Fit',line:{color:'#0f766e',width:2,dash:calibration.model==='quadratic'?'dot':'dash'},opacity:0.75});
-    if(lastResults.length) traces.push({x:lastResults.filter(r=>Number.isFinite(r.eu)).map(r=>r.eu),y:lastResults.filter(r=>Number.isFinite(r.eu)).map(r=>r.abs),mode:'markers',type:'scatter',name:'Samples',marker:{color:'#f59e0b',symbol:'diamond',size:9}});
-  }
-  const layout={margin:{t:20,r:16,b:40,l:46},showlegend:false,paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',xaxis:{title:{text:'Endotoxin (EU/mL)',font:{size:10,color:'#64748b'}},gridcolor:'#f1f5f9',tickfont:{size:9,color:'#94a3b8'}},yaxis:{title:{text:'Absorbance',font:{size:10,color:'#64748b'}},gridcolor:'#f1f5f9',tickfont:{size:9,color:'#94a3b8'}}};
-  try{Plotly.newPlot(targetId,traces,layout,{responsive:true,displayModeBar:false});}catch(e){console.warn('Plotly not available yet:',e);}
-}
-
-function estimate(){
-  if(!calibration){ alert('Compute a valid calibration curve first.'); return; }
-  const samples=readSamples();
-  if(!samples.length){ alert('Add at least one sample with valid absorbance data.'); return; }
-  const {model}=calibration;
-  const absValues=calibration.points.map(p=>p[1]);
-  const absMin=Math.min(...absValues),absMax=Math.max(...absValues);
-  lastResults=samples.map(s=>{
-    let eu=NaN,ambiguous=false,noSolution=false;
-    if(model==='linear') eu=(s.abs-calibration.intercept)/calibration.slope;
-    else {
-      const inv=invertQuadratic(calibration,s.abs,calibration.xMin,calibration.xMax);
-      ambiguous=inv.ambiguous;
-      if(inv.roots.length===1) eu=inv.roots[0];
-      else if(inv.roots.length===0) noSolution=true;
+    function clearCal() {
+      document.getElementById('calBody').innerHTML = '';
+      for (let i = 0; i < 4; i++) addCalRow();
+      calibration = null;
+      updateFitCard();
+      drawCalPlot();
+      document.getElementById('estimateBtn').disabled = true;
+      document.getElementById('estimateHint').style.display = 'block';
     }
-    const outOfRange=s.abs<absMin || s.abs>absMax;
-    const invalidInput=s.abs<0;
-    const negativeEstimate=Number.isFinite(eu)&&eu<0;
-    return {...s,eu,outOfRange,invalidInput,negativeEstimate,ambiguous,noSolution};
-  });
-  renderResults(); drawCalPlot();
-}
-function renderResults(){
-  const threshold=parseFloat(document.getElementById('thresholdInput').value)||0;
-  const body=document.getElementById('resultsBody');
-  if(!lastResults.length){ body.innerHTML='<tr><td colspan="5" class="px-5 py-6 text-ink-400 text-[13px] italic">No results yet.</td></tr>'; return; }
-  body.innerHTML=lastResults.map(r=>{
-    const above=Number.isFinite(r.eu)&&r.eu>=threshold;
-    const euText=Number.isFinite(r.eu)?r.eu.toFixed(2):'—';
-    const pills=[];
-    if(r.invalidInput) pills.push('<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-rose-50 text-rose-700">Invalid input</span>');
-    if(r.outOfRange) pills.push('<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-700">Extrapolated</span>');
-    if(r.negativeEstimate) pills.push('<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-rose-50 text-rose-700">Negative estimate</span>');
-    if(r.ambiguous) pills.push('<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-rose-50 text-rose-700">Ambiguous nonlinear result</span>');
-    if(r.noSolution) pills.push('<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-rose-50 text-rose-700">No solution in range</span>');
-    if(!r.invalidInput && !r.ambiguous && !r.noSolution) pills.push(`<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium ${above?'bg-rose-50 text-rose-700':'bg-emerald-50 text-emerald-700'}">${above?'Above threshold':'Below threshold'}</span>`);
-    const repText=r.n>1?`${r.n} repl · SD ${Number.isFinite(r.sd)?r.sd.toFixed(4):'—'} · CV ${Number.isFinite(r.cv)?r.cv.toFixed(1)+'%':'—'}`:'1 value';
-    return `<tr class="hover:bg-slate-50/70"><td class="px-5 py-3 font-medium">${r.name}</td><td class="px-5 py-3 num">${r.abs}<div class="text-[10px] text-ink-400 mt-0.5">${repText}</div></td><td class="px-5 py-3 num font-semibold">${euText}</td><td class="px-5 py-3 text-right space-x-1">${pills.join(' ')}</td></tr>`;
-  }).join('');
-}
+    function clearSamples() {
+      document.getElementById('sampleBody').innerHTML = '';
+      for (let i = 0; i < 3; i++) addSampleRow();
+    }
+    function togglePaste() {
+      const el = document.getElementById('pasteBox');
+      el.classList.toggle('hidden');
+    }
+    function importPaste() {
+      const raw = document.getElementById('pasteArea').value.trim();
+      if (!raw) return;
+      raw.split('\n').forEach(line => {
+        const parts = line.split(',');
+        if (parts.length >= 2) {
+          const name = parts.shift().trim();
+          const abs = parts.length ? parts.shift().trim() : '';
+          const reps = parts.join(',').trim();
+          addSampleRow(name, abs, reps);
+        }
+      });
+      document.getElementById('pasteArea').value = '';
+    }
 
-document.getElementById('thresholdInput').addEventListener('input', ()=>{ if(lastResults.length) renderResults(); });
+    /* ---------- tabs ---------- */
+    function showTab(name) {
+      ['cal', 'est', 'rep'].forEach(t => {
+        document.getElementById('view-' + t).classList.toggle('active', t === name);
+        const btn = document.getElementById('tabBtn-' + t);
+        btn.classList.toggle('tab-active', t === name);
+        btn.classList.toggle('tab-inactive', t !== name);
+      });
+      if (name === 'cal') setTimeout(drawCalPlot, 10);
+      if (name === 'rep') setTimeout(buildReport, 10);
+    }
+    function goToReport() { showTab('rep'); }
 
-function downloadCsv(){
-  if(!lastResults.length){alert('Run "Estimate concentrations" first.');return;}
-  const threshold=parseFloat(document.getElementById('thresholdInput').value)||0;
-  let csv='Sample,Mean Absorbance,Replicates,N,SD,CV %,Estimated EU/mL,Status,Extrapolated,Negative Estimate,Ambiguous,No Solution\n';
-  lastResults.forEach(r=>{
-    const euText=Number.isFinite(r.eu)?r.eu.toFixed(4):'undefined';
-    const status=r.invalidInput?'Invalid input':r.noSolution?'No solution in range':r.ambiguous?'Ambiguous nonlinear result':(r.eu>=threshold?'Above threshold':'Below threshold');
-    const rep=r.replicates&&r.replicates.length?r.replicates.join(';'):'1 value';
-    csv+=`"${r.name}",${r.abs},"${rep}",${r.n},${Number.isFinite(r.sd)?r.sd.toFixed(6):''},${Number.isFinite(r.cv)?r.cv.toFixed(3):''},${euText},${status},${r.outOfRange?'Yes':'No'},${r.negativeEstimate?'Yes':'No'},${r.ambiguous?'Yes':'No'},${r.noSolution?'Yes':'No'}\n`;
-  });
-  csv+=`\nCalibration model,${calibration.model}\n`;
-  if(calibration.model==='linear') csv+=`Calibration equation,y = ${calibration.slope.toFixed(6)}x + ${calibration.intercept.toFixed(6)}\n`;
-  else csv+=`Calibration equation,y = ${calibration.a.toFixed(6)}x^2 + ${calibration.b.toFixed(6)}x + ${calibration.c.toFixed(6)}\n`;
-  csv+=`R-squared,${calibration.r2.toFixed(6)}\n`;
-  if(calibration.meta) calibration.meta.forEach(m=>{ csv+=`Standard ${m.eu} EU/mL replicates,${m.replicates.join(';')}\n`; });
-  const blob=new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='endotoxin_assay_results.csv'; a.click(); URL.revokeObjectURL(url);
-}
+    /* ---------- regression ---------- */
+    function mean(values) { return values.reduce((a, b) => a + b, 0) / values.length; }
+    function sd(values) {
+      if (values.length < 2) return NaN;
+      const m = mean(values); return Math.sqrt(values.reduce((a, v) => a + (v - m) ** 2, 0) / (values.length - 1));
+    }
+    function parseReplicates(raw) {
+      if (!raw) return [];
+      return raw.split(/[,;\s]+/).map(v => parseFloat(v)).filter(Number.isFinite);
+    }
+    function summarizeReplicates(meanValue, raw) {
+      const reps = parseReplicates(raw);
+      const values = reps.length ? reps : (Number.isFinite(meanValue) ? [meanValue] : []);
+      const m = values.length ? mean(values) : NaN;
+      const s = sd(values);
+      const cv = (Number.isFinite(s) && m !== 0) ? Math.abs(s / m * 100) : NaN;
+      return { values, mean: m, sd: s, cv, n: values.length };
+    }
 
-/* ---------- report ---------- */
-function buildReport(){
-  const runLabel=document.getElementById('runLabel').value||'Run 1';
-  document.getElementById('repRunLabel').textContent=runLabel;
-  document.getElementById('repDate').textContent=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
-  if(!calibration){
-    document.getElementById('repSummary').textContent='No calibration curve computed yet.';
-    document.getElementById('repR2').textContent='—'; document.getElementById('repSlope').textContent='—'; document.getElementById('repIntercept').textContent='—';
-    document.getElementById('repResultsBody').innerHTML='<tr><td colspan="5" class="px-3 py-4 text-ink-400 italic">No samples estimated yet.</td></tr>'; return;
-  }
-  document.getElementById('repR2').textContent=Number.isFinite(calibration.r2)?calibration.r2.toFixed(4):'undefined';
-  document.getElementById('repSlope').textContent=calibration.model==='linear'?calibration.slope.toFixed(4):'quadratic';
-  document.getElementById('repIntercept').textContent=calibration.model==='linear'?calibration.intercept.toFixed(4):calibration.c.toFixed(4);
-  const modelText=calibration.model==='linear'?'linear':'quadratic (exploratory)';
-  let summary=`Calibration model: ${modelText}. ${calibration.points.length} concentration levels. R² = ${Number.isFinite(calibration.r2)?calibration.r2.toFixed(3):'undefined'}.`;
-  if(calibration.model==='quadratic' && calibration.linear) summary+=` Quadratic R² improvement over linear = ${(calibration.r2-calibration.linear.r2).toFixed(3)}.`;
-  if(lastResults.length){
-    const threshold=parseFloat(document.getElementById('thresholdInput').value)||0;
-    const above=lastResults.filter(r=>Number.isFinite(r.eu)&&r.eu>=threshold).length;
-    const flags=lastResults.filter(r=>r.outOfRange||r.negativeEstimate||r.ambiguous||r.invalidInput||r.noSolution).length;
-    summary+=` ${lastResults.length} sample(s) estimated; ${above} at/above the ${threshold} EU/mL decision threshold; ${flags} sample(s) carry one or more warnings.`;
-  }
-  document.getElementById('repSummary').textContent=summary;
-  const repBody=document.getElementById('repResultsBody');
-  const reportThreshold=parseFloat(document.getElementById('thresholdInput').value)||0;
-  if(lastResults.length){
-    repBody.innerHTML=lastResults.map(r=>{
-      const above=Number.isFinite(r.eu)&&r.eu>=reportThreshold; const status=r.invalidInput?'Invalid input':r.noSolution?'No solution in range':r.ambiguous?'Ambiguous nonlinear result':r.outOfRange?'Extrapolated':r.negativeEstimate?'Negative estimate':(above?'Above threshold':'Within range');
-      return `<tr><td class="px-3 py-2 font-semibold">${r.name}</td><td class="px-3 py-2 num">${r.abs}</td><td class="px-3 py-2 num">${Number.isFinite(r.eu)?r.eu.toFixed(2)+' EU/mL':'—'}</td><td class="px-3 py-2 num">${r.n}${r.n>1?` repl · SD ${Number.isFinite(r.sd)?r.sd.toFixed(4):'—'} · CV ${Number.isFinite(r.cv)?r.cv.toFixed(1)+'%':'—'}`:''}</td><td class="px-3 py-2 text-right font-bold uppercase">${status}</td></tr>`;
-    }).join('');
-  } else repBody.innerHTML='<tr><td colspan="5" class="px-3 py-4 text-ink-400 italic">No samples estimated yet.</td></tr>';
-  drawCalPlot('repPlot');
-}
+    function linreg(points) {
+      const n = points.length;
+      if (n < 2) return { slope: NaN, intercept: NaN, r2: NaN };
+      const sx = points.reduce((a, p) => a + p[0], 0);
+      const sy = points.reduce((a, p) => a + p[1], 0);
+      const sxy = points.reduce((a, p) => a + p[0] * p[1], 0);
+      const sxx = points.reduce((a, p) => a + p[0] * p[0], 0);
+      const den = n * sxx - sx * sx;
+      if (Math.abs(den) < 1e-12) return { slope: NaN, intercept: NaN, r2: NaN };
+      const slope = (n * sxy - sx * sy) / den;
+      const intercept = (sy - slope * sx) / n;
+      const meanY = sy / n;
+      const ssTot = points.reduce((a, p) => a + (p[1] - meanY) ** 2, 0);
+      const ssRes = points.reduce((a, p) => a + (p[1] - (slope * p[0] + intercept)) ** 2, 0);
+      const r2 = ssTot === 0 ? NaN : 1 - ssRes / ssTot;
+      return { slope, intercept, r2 };
+    }
 
-function waitForPlotlyThenDraw(){
-  if(typeof Plotly !== 'undefined'){
-    drawCalPlot();
-  } else {
-    setTimeout(waitForPlotlyThenDraw, 150);
-  }
-}
-waitForPlotlyThenDraw();
-</script>
+    function quadreg(points) {
+      if (points.length < 3) return { a: NaN, b: NaN, c: NaN, r2: NaN };
+      let s0 = points.length, s1 = 0, s2 = 0, s3 = 0, s4 = 0, t0 = 0, t1 = 0, t2 = 0;
+      for (const [x, y] of points) {
+        const x2 = x * x;
+        s1 += x; s2 += x2; s3 += x2 * x; s4 += x2 * x2;
+        t0 += y; t1 += x * y; t2 += x2 * y;
+      }
+      const A = [[s4, s3, s2], [s3, s2, s1], [s2, s1, s0]];
+      const B = [t2, t1, t0];
+      const M = A.map((r, i) => [...r, B[i]]);
+      for (let col = 0; col < 3; col++) {
+        let pivot = col;
+        for (let r = col + 1; r < 3; r++) if (Math.abs(M[r][col]) > Math.abs(M[pivot][col])) pivot = r;
+        if (Math.abs(M[pivot][col]) < 1e-12) return { a: NaN, b: NaN, c: NaN, r2: NaN };
+        [M[col], M[pivot]] = [M[pivot], M[col]];
+        const pv = M[col][col]; for (let j = col; j < 4; j++) M[col][j] /= pv;
+        for (let r = 0; r < 3; r++) if (r !== col) { const f = M[r][col]; for (let j = col; j < 4; j++) M[r][j] -= f * M[col][j]; }
+      }
+      const [a, b, c] = [M[0][3], M[1][3], M[2][3]];
+      const meanY = points.reduce((q, p) => q + p[1], 0) / points.length;
+      const ssTot = points.reduce((q, p) => q + (p[1] - meanY) ** 2, 0);
+      const ssRes = points.reduce((q, p) => q + (p[1] - (a * p[0] * p[0] + b * p[0] + c)) ** 2, 0);
+      const r2 = ssTot === 0 ? NaN : 1 - ssRes / ssTot;
+      return { a, b, c, r2 };
+    }
+
+    function quadPredict(model, x) { return model.a * x * x + model.b * x + model.c; }
+    function chooseModel(points, requested) {
+      const linear = linreg(points);
+      const quad = quadreg(points);
+      if (requested === 'linear') return { type: 'linear', ...linear, quad };
+      if (requested === 'quadratic') return { type: 'quadratic', ...quad, linear };
+      if (points.length >= 5 && Number.isFinite(quad.r2) && Number.isFinite(linear.r2) && (quad.r2 - linear.r2) >= 0.03) {
+        return { type: 'quadratic', ...quad, linear, exploratory: true };
+      }
+      return { type: 'linear', ...linear, quad };
+    }
+    function invertQuadratic(model, y, xMin, xMax) {
+      const A = model.a, B = model.b, C = model.c - y;
+      if (Math.abs(A) < 1e-12) return { roots: [(y - model.c) / model.b], ambiguous: false };
+      const disc = B * B - 4 * A * C;
+      if (disc < 0) return { roots: [], ambiguous: false };
+      const r = Math.sqrt(disc);
+      const roots = [(-B + r) / (2 * A), (-B - r) / (2 * A)].filter(Number.isFinite).filter(x => x >= xMin - 1e-10 && x <= xMax + 1e-10);
+      const unique = [...new Set(roots.map(v => Number(v.toPrecision(12))))];
+      return { roots: unique, ambiguous: unique.length > 1 };
+    }
+
+    function readCalPoints() {
+      const pts = [];
+      const meta = [];
+      Array.from(document.getElementById('calBody').children).forEach(tr => {
+        const x = parseFloat(tr.children[0].querySelector('input').value);
+        const meanInput = parseFloat(tr.children[1].querySelector('input').value);
+        const raw = tr.children[2].querySelector('input').value.trim();
+        if (!Number.isFinite(x)) return;
+        const summary = summarizeReplicates(meanInput, raw);
+        if (Number.isFinite(summary.mean)) {
+          pts.push([x, summary.mean]);
+          meta.push({ eu: x, mean: summary.mean, sd: summary.sd, cv: summary.cv, n: summary.n, replicates: summary.values });
+        }
+      });
+      return { points: pts, meta };
+    }
+    function readSamples() {
+      const s = [];
+      Array.from(document.getElementById('sampleBody').children).forEach(tr => {
+        const name = tr.children[0].querySelector('input').value.trim();
+        const meanInput = parseFloat(tr.children[1].querySelector('input').value);
+        const raw = tr.children[2].querySelector('input').value.trim();
+        const summary = summarizeReplicates(meanInput, raw);
+        if (name && Number.isFinite(summary.mean)) s.push({ name, abs: summary.mean, sd: summary.sd, cv: summary.cv, n: summary.n, replicates: summary.values });
+      });
+      return s;
+    }
+
+    function computeCal() {
+      const read = readCalPoints();
+      const pts = read.points;
+      if (pts.length < 2) { alert('Add at least two calibration standards with valid absorbance data.'); return; }
+      const estBtn = document.getElementById('estimateBtn');
+      const hint = document.getElementById('estimateHint');
+      const uniqueEU = new Set(pts.map(p => p[0]));
+      if (uniqueEU.size < 2) {
+        calibration = null; updateFitCard(); estBtn.disabled = true; hint.textContent = 'Calibration rejected: at least two distinct concentrations are required.'; hint.style.display = 'block';
+        return;
+      }
+      if (pts.some(p => p[0] < 0)) {
+        calibration = null; updateFitCard(); estBtn.disabled = true; hint.textContent = 'Calibration rejected: endotoxin concentrations cannot be negative.'; hint.style.display = 'block'; return;
+      }
+      const requested = document.getElementById('modelSelect').value;
+      const fit = chooseModel(pts, requested);
+      const zeroSlope = fit.type === 'linear' && (!Number.isFinite(fit.slope) || Math.abs(fit.slope) < 1e-9);
+      if (zeroSlope) { calibration = null; updateFitCard(true); estBtn.disabled = true; hint.textContent = 'Calibration rejected: zero/undefined slope — absorbance does not respond to concentration.'; hint.style.display = 'block'; return; }
+      if (fit.type === 'quadratic' && (!Number.isFinite(fit.a) || !Number.isFinite(fit.b) || !Number.isFinite(fit.c))) {
+        calibration = null; updateFitCard(); estBtn.disabled = true; hint.textContent = 'Quadratic calibration could not be solved; use linear mode or revise standards.'; hint.style.display = 'block'; return;
+      }
+      calibration = { ...fit, points: pts, meta: read.meta, model: fit.type, requestedModel: requested, xMin: Math.min(...pts.map(p => p[0])), xMax: Math.max(...pts.map(p => p[0])) };
+      updateFitCard(false);
+      estBtn.disabled = false; hint.style.display = 'none';
+      const hasNegative = read.meta.some(m => m.mean < 0 || (m.replicates || []).some(v => v < 0));
+      const warnEl = document.getElementById('negWarning'); if (warnEl) warnEl.style.display = hasNegative ? 'block' : 'none';
+      const slopeWarnEl = document.getElementById('negSlopeWarning'); if (slopeWarnEl) slopeWarnEl.style.display = (fit.type === 'linear' && fit.slope < 0) ? 'block' : 'none';
+      const modelHint = document.getElementById('modelHint');
+      if (modelHint) modelHint.textContent = fit.type === 'quadratic'
+        ? `Quadratic model selected (${requested === 'auto' ? 'automatic exploratory detection' : 'manual selection'}). Treat results as exploratory; inversion is only accepted when exactly one root falls inside the calibration range.`
+        : 'Linear model active. Automatic mode switches to quadratic only when the quadratic fit improves R² materially; review the plotted curve before relying on a nonlinear model.';
+      try { drawCalPlot(); } catch (e) { console.warn('Chart render skipped:', e); }
+    }
+
+    function updateFitCard(zeroSlope) {
+      const banner = document.getElementById('fitBanner');
+      if (!calibration) {
+        document.getElementById('r2Val').textContent = '—'; document.getElementById('slopeVal').textContent = '—'; document.getElementById('interceptVal').textContent = '—'; document.getElementById('eqnVal').textContent = '—';
+        banner.className = 'mx-5 mt-4 mb-3 rounded-md border px-4 py-3 flex items-center justify-between bg-slate-50 border-slate-200';
+        banner.innerHTML = '<div class="flex items-center gap-2.5"><span class="w-8 h-8 rounded-full bg-slate-100 text-ink-500 flex items-center justify-center"><i class="ph ph-minus-circle text-lg"></i></span><div><div class="text-[13px] font-semibold text-ink-700">No valid curve yet</div><div class="text-[11px] text-ink-500">Enter standards and compute</div></div></div>';
+        return;
+      }
+      const { model, r2 } = calibration;
+      document.getElementById('r2Val').textContent = Number.isFinite(r2) ? r2.toFixed(3) : 'undefined';
+      if (model === 'quadratic') {
+        document.getElementById('slopeVal').textContent = '—';
+        document.getElementById('interceptVal').textContent = calibration.c.toFixed(4);
+        document.getElementById('eqnVal').textContent = `y = ${calibration.a.toFixed(4)}x² ${calibration.b >= 0 ? '+' : '−'} ${Math.abs(calibration.b).toFixed(4)}x ${calibration.c >= 0 ? '+' : '−'} ${Math.abs(calibration.c).toFixed(4)}`;
+      } else {
+        document.getElementById('slopeVal').textContent = calibration.slope.toFixed(4);
+        document.getElementById('interceptVal').textContent = calibration.intercept.toFixed(4);
+        document.getElementById('eqnVal').textContent = `y = ${calibration.slope.toFixed(4)}x ${calibration.intercept >= 0 ? '+' : '−'} ${Math.abs(calibration.intercept).toFixed(4)}`;
+      }
+      if (zeroSlope) {
+        banner.className = 'mx-5 mt-4 mb-3 rounded-md border px-4 py-3 flex items-center justify-between bg-rose-50 border-rose-200';
+        banner.innerHTML = '<div class="flex items-center gap-2.5"><span class="w-8 h-8 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center"><i class="ph-fill ph-x-circle text-lg"></i></span><div><div class="text-[13px] font-semibold text-rose-800">Calibration rejected</div><div class="text-[11px] text-rose-600">Zero/undefined slope — absorbance does not respond to concentration</div></div></div>';
+      } else if (model === 'quadratic') {
+        banner.className = 'mx-5 mt-4 mb-3 rounded-md border px-4 py-3 flex items-center justify-between bg-amber-50 border-amber-200';
+        banner.innerHTML = '<div class="flex items-center gap-2.5"><span class="w-8 h-8 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center"><i class="ph-fill ph-warning text-lg"></i></span><div><div class="text-[13px] font-semibold text-amber-800">Exploratory nonlinear fit</div><div class="text-[11px] text-amber-600">Quadratic model — not a validated assay acceptance rule</div></div></div>';
+      } else if (r2 >= 0.9) {
+        banner.className = 'mx-5 mt-4 mb-3 rounded-md border px-4 py-3 flex items-center justify-between bg-emerald-50 border-emerald-200';
+        banner.innerHTML = '<div class="flex items-center gap-2.5"><span class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center"><i class="ph-fill ph-check-circle text-lg"></i></span><div><div class="text-[13px] font-semibold text-emerald-800">Strong linear fit</div><div class="text-[11px] text-emerald-600">R² ≥ 0.90 — fit quality only</div></div></div>';
+      } else if (r2 >= 0.7) {
+        banner.className = 'mx-5 mt-4 mb-3 rounded-md border px-4 py-3 flex items-center justify-between bg-amber-50 border-amber-200';
+        banner.innerHTML = '<div class="flex items-center gap-2.5"><span class="w-8 h-8 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center"><i class="ph-fill ph-warning text-lg"></i></span><div><div class="text-[13px] font-semibold text-amber-800">Moderate linear fit</div><div class="text-[11px] text-amber-600">Review scatter and assay criteria</div></div></div>';
+      } else {
+        banner.className = 'mx-5 mt-4 mb-3 rounded-md border px-4 py-3 flex items-center justify-between bg-rose-50 border-rose-200';
+        banner.innerHTML = '<div class="flex items-center gap-2.5"><span class="w-8 h-8 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center"><i class="ph-fill ph-x-circle text-lg"></i></span><div><div class="text-[13px] font-semibold text-rose-800">Weak linear fit</div><div class="text-[11px] text-rose-600">R² &lt; 0.70 — do not treat as a validated calibration</div></div></div>';
+      }
+    }
+
+    function drawCalPlot(targetId) {
+      targetId = targetId || 'calPlot';
+      const pts = readCalPoints().points;
+      const traces = [];
+      if (pts.length) traces.push({ x: pts.map(p => p[0]), y: pts.map(p => p[1]), mode: 'markers', type: 'scatter', name: 'Standards', marker: { color: '#0f766e', size: 9, line: { color: 'white', width: 1.5 } } });
+      if (calibration) {
+        const xMin = Math.min(0, ...pts.map(p => p[0])), xMax = Math.max(...pts.map(p => p[0]));
+        const grid = Array.from({ length: 81 }, (_, i) => xMin + (xMax - xMin) * i / 80);
+        const ys = grid.map(x => calibration.model === 'quadratic' ? quadPredict(calibration, x) : calibration.slope * x + calibration.intercept);
+        traces.push({ x: grid, y: ys, mode: 'lines', type: 'scatter', name: 'Fit', line: { color: '#0f766e', width: 2, dash: calibration.model === 'quadratic' ? 'dot' : 'dash' }, opacity: 0.75 });
+        if (lastResults.length) traces.push({ x: lastResults.filter(r => Number.isFinite(r.eu)).map(r => r.eu), y: lastResults.filter(r => Number.isFinite(r.eu)).map(r => r.abs), mode: 'markers', type: 'scatter', name: 'Samples', marker: { color: '#f59e0b', symbol: 'diamond', size: 9 } });
+      }
+      const layout = { margin: { t: 20, r: 16, b: 40, l: 46 }, showlegend: false, paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)', xaxis: { title: { text: 'Endotoxin (EU/mL)', font: { size: 10, color: '#64748b' } }, gridcolor: '#f1f5f9', tickfont: { size: 9, color: '#94a3b8' } }, yaxis: { title: { text: 'Absorbance', font: { size: 10, color: '#64748b' } }, gridcolor: '#f1f5f9', tickfont: { size: 9, color: '#94a3b8' } } };
+      try { Plotly.newPlot(targetId, traces, layout, { responsive: true, displayModeBar: false }); } catch (e) { console.warn('Plotly not available yet:', e); }
+    }
+
+    function estimate() {
+      if (!calibration) { alert('Compute a valid calibration curve first.'); return; }
+      const samples = readSamples();
+      if (!samples.length) { alert('Add at least one sample with valid absorbance data.'); return; }
+      const { model } = calibration;
+      const absValues = calibration.points.map(p => p[1]);
+      const absMin = Math.min(...absValues), absMax = Math.max(...absValues);
+      lastResults = samples.map(s => {
+        let eu = NaN, ambiguous = false, noSolution = false;
+        if (model === 'linear') eu = (s.abs - calibration.intercept) / calibration.slope;
+        else {
+          const inv = invertQuadratic(calibration, s.abs, calibration.xMin, calibration.xMax);
+          ambiguous = inv.ambiguous;
+          if (inv.roots.length === 1) eu = inv.roots[0];
+          else if (inv.roots.length === 0) noSolution = true;
+        }
+        const outOfRange = s.abs < absMin || s.abs > absMax;
+        const invalidInput = s.abs < 0;
+        const negativeEstimate = Number.isFinite(eu) && eu < 0;
+        return { ...s, eu, outOfRange, invalidInput, negativeEstimate, ambiguous, noSolution };
+      });
+      renderResults(); drawCalPlot();
+    }
+    function renderResults() {
+      const threshold = parseFloat(document.getElementById('thresholdInput').value) || 0;
+      const body = document.getElementById('resultsBody');
+      if (!lastResults.length) { body.innerHTML = '<tr><td colspan="5" class="px-5 py-6 text-ink-400 text-[13px] italic">No results yet.</td></tr>'; return; }
+      body.innerHTML = lastResults.map(r => {
+        const above = Number.isFinite(r.eu) && r.eu >= threshold;
+        const euText = Number.isFinite(r.eu) ? r.eu.toFixed(2) : '—';
+        const pills = [];
+        if (r.invalidInput) pills.push('<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-rose-50 text-rose-700">Invalid input</span>');
+        if (r.outOfRange) pills.push('<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-700">Extrapolated</span>');
+        if (r.negativeEstimate) pills.push('<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-rose-50 text-rose-700">Negative estimate</span>');
+        if (r.ambiguous) pills.push('<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-rose-50 text-rose-700">Ambiguous nonlinear result</span>');
+        if (r.noSolution) pills.push('<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-rose-50 text-rose-700">No solution in range</span>');
+        if (!r.invalidInput && !r.ambiguous && !r.noSolution) pills.push(`<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium ${above ? 'bg-rose-50 text-rose-700' : 'bg-emerald-50 text-emerald-700'}">${above ? 'Above threshold' : 'Below threshold'}</span>`);
+        const repText = r.n > 1 ? `${r.n} repl · SD ${Number.isFinite(r.sd) ? r.sd.toFixed(4) : '—'} · CV ${Number.isFinite(r.cv) ? r.cv.toFixed(1) + '%' : '—'}` : '1 value';
+        return `<tr class="hover:bg-slate-50/70"><td class="px-5 py-3 font-medium">${r.name}</td><td class="px-5 py-3 num">${r.abs}<div class="text-[10px] text-ink-400 mt-0.5">${repText}</div></td><td class="px-5 py-3 num font-semibold">${euText}</td><td class="px-5 py-3 text-right space-x-1">${pills.join(' ')}</td></tr>`;
+      }).join('');
+    }
+
+    document.getElementById('thresholdInput').addEventListener('input', () => { if (lastResults.length) renderResults(); });
+
+    function downloadCsv() {
+      if (!lastResults.length) { alert('Run "Estimate concentrations" first.'); return; }
+      const threshold = parseFloat(document.getElementById('thresholdInput').value) || 0;
+      let csv = 'Sample,Mean Absorbance,Replicates,N,SD,CV %,Estimated EU/mL,Status,Extrapolated,Negative Estimate,Ambiguous,No Solution\n';
+      lastResults.forEach(r => {
+        const euText = Number.isFinite(r.eu) ? r.eu.toFixed(4) : 'undefined';
+        const status = r.invalidInput ? 'Invalid input' : r.noSolution ? 'No solution in range' : r.ambiguous ? 'Ambiguous nonlinear result' : (r.eu >= threshold ? 'Above threshold' : 'Below threshold');
+        const rep = r.replicates && r.replicates.length ? r.replicates.join(';') : '1 value';
+        csv += `"${r.name}",${r.abs},"${rep}",${r.n},${Number.isFinite(r.sd) ? r.sd.toFixed(6) : ''},${Number.isFinite(r.cv) ? r.cv.toFixed(3) : ''},${euText},${status},${r.outOfRange ? 'Yes' : 'No'},${r.negativeEstimate ? 'Yes' : 'No'},${r.ambiguous ? 'Yes' : 'No'},${r.noSolution ? 'Yes' : 'No'}\n`;
+      });
+      csv += `\nCalibration model,${calibration.model}\n`;
+      if (calibration.model === 'linear') csv += `Calibration equation,y = ${calibration.slope.toFixed(6)}x + ${calibration.intercept.toFixed(6)}\n`;
+      else csv += `Calibration equation,y = ${calibration.a.toFixed(6)}x^2 + ${calibration.b.toFixed(6)}x + ${calibration.c.toFixed(6)}\n`;
+      csv += `R-squared,${calibration.r2.toFixed(6)}\n`;
+      if (calibration.meta) calibration.meta.forEach(m => { csv += `Standard ${m.eu} EU/mL replicates,${m.replicates.join(';')}\n`; });
+      const blob = new Blob([csv], { type: 'text/csv' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'endotoxin_assay_results.csv'; a.click(); URL.revokeObjectURL(url);
+    }
+
+    /* ---------- report ---------- */
+    function buildReport() {
+      const runLabel = document.getElementById('runLabel').value || 'Run 1';
+      document.getElementById('repRunLabel').textContent = runLabel;
+      document.getElementById('repDate').textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+      if (!calibration) {
+        document.getElementById('repSummary').textContent = 'No calibration curve computed yet.';
+        document.getElementById('repR2').textContent = '—'; document.getElementById('repSlope').textContent = '—'; document.getElementById('repIntercept').textContent = '—';
+        document.getElementById('repResultsBody').innerHTML = '<tr><td colspan="5" class="px-3 py-4 text-ink-400 italic">No samples estimated yet.</td></tr>'; return;
+      }
+      document.getElementById('repR2').textContent = Number.isFinite(calibration.r2) ? calibration.r2.toFixed(4) : 'undefined';
+      document.getElementById('repSlope').textContent = calibration.model === 'linear' ? calibration.slope.toFixed(4) : 'quadratic';
+      document.getElementById('repIntercept').textContent = calibration.model === 'linear' ? calibration.intercept.toFixed(4) : calibration.c.toFixed(4);
+      const modelText = calibration.model === 'linear' ? 'linear' : 'quadratic (exploratory)';
+      let summary = `Calibration model: ${modelText}. ${calibration.points.length} concentration levels. R² = ${Number.isFinite(calibration.r2) ? calibration.r2.toFixed(3) : 'undefined'}.`;
+      if (calibration.model === 'quadratic' && calibration.linear) summary += ` Quadratic R² improvement over linear = ${(calibration.r2 - calibration.linear.r2).toFixed(3)}.`;
+      if (lastResults.length) {
+        const threshold = parseFloat(document.getElementById('thresholdInput').value) || 0;
+        const above = lastResults.filter(r => Number.isFinite(r.eu) && r.eu >= threshold).length;
+        const flags = lastResults.filter(r => r.outOfRange || r.negativeEstimate || r.ambiguous || r.invalidInput || r.noSolution).length;
+        summary += ` ${lastResults.length} sample(s) estimated; ${above} at/above the ${threshold} EU/mL decision threshold; ${flags} sample(s) carry one or more warnings.`;
+      }
+      document.getElementById('repSummary').textContent = summary;
+      const repBody = document.getElementById('repResultsBody');
+      const reportThreshold = parseFloat(document.getElementById('thresholdInput').value) || 0;
+      if (lastResults.length) {
+        repBody.innerHTML = lastResults.map(r => {
+          const above = Number.isFinite(r.eu) && r.eu >= reportThreshold; const status = r.invalidInput ? 'Invalid input' : r.noSolution ? 'No solution in range' : r.ambiguous ? 'Ambiguous nonlinear result' : r.outOfRange ? 'Extrapolated' : r.negativeEstimate ? 'Negative estimate' : (above ? 'Above threshold' : 'Within range');
+          return `<tr><td class="px-3 py-2 font-semibold">${r.name}</td><td class="px-3 py-2 num">${r.abs}</td><td class="px-3 py-2 num">${Number.isFinite(r.eu) ? r.eu.toFixed(2) + ' EU/mL' : '—'}</td><td class="px-3 py-2 num">${r.n}${r.n > 1 ? ` repl · SD ${Number.isFinite(r.sd) ? r.sd.toFixed(4) : '—'} · CV ${Number.isFinite(r.cv) ? r.cv.toFixed(1) + '%' : '—'}` : ''}</td><td class="px-3 py-2 text-right font-bold uppercase">${status}</td></tr>`;
+        }).join('');
+      } else repBody.innerHTML = '<tr><td colspan="5" class="px-3 py-4 text-ink-400 italic">No samples estimated yet.</td></tr>';
+      drawCalPlot('repPlot');
+    }
+
+    function waitForPlotlyThenDraw() {
+      if (typeof Plotly !== 'undefined') {
+        drawCalPlot();
+      } else {
+        setTimeout(waitForPlotlyThenDraw, 150);
+      }
+    }
+    waitForPlotlyThenDraw();
+  </script>
 </body>
+
 </html>
